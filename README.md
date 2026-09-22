@@ -36,6 +36,19 @@ Then open `http://localhost:8000`.
 
 Opening the raw HTML file inside some app file-previewers may block JavaScript. Test it through a normal browser or static web host.
 
+## Catalyst Play integration
+
+Primary platform analytics use the single game identity `tickless`. Ranked modes use separate score board IDs so incompatible scoring systems never share a leaderboard:
+
+- `tickless-calibration`
+- `tickless-daily`
+- `tickless-sudden`
+- `tickless-rush`
+
+Tracked first-party events include game load/open/start, mode selection, round completion, run completion, leaderboard opens, achievements, sharing, challenges, onboarding, and session end. Source / UTM attribution and the shared Catalyst Play player ID come from the Catalyst Game SDK.
+
+`preview.html` is the lightweight animated card used by the Catalyst Play homepage.
+
 ## Hosting
 
 The game is fully static and can be hosted with GitHub Pages or another static host.
@@ -47,7 +60,7 @@ CatalystPlay leaderboard IDs are reserved in the build as:
 - `tickless-sudden`
 - `tickless-rush`
 
-Until CatalystPlay is connected, leaderboard data is clearly labeled as a local preview.
+Until Catalyst Play is connected, leaderboard data is clearly labeled as a local preview. The intended production hostname is `https://tickless.catalystplay.net/`.
 
 ## Status
 
