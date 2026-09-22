@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#090b10">
+<title>Tickless — No Clock. Just Instinct.</title>
+<meta name="description" content="Tickless is a timing skill game. Calibrate for three seconds, lose the clock, and stop as close to the target time as possible.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Tickless">
+<meta property="og:title" content="Tickless — No Clock. Just Instinct.">
+<meta property="og:description" content="Master your internal clock. Calibrate, go blind, and stop on the exact target.">
+<meta property="og:type" content="website">
+<style>
+:root{
+  --bg:#090b10;--panel:#11151d;--panel2:#171c26;--text:#f5f7fb;--muted:#98a2b5;--line:#252d3a;
+  --accent:#ffd338;--accent2:#ff7a4c;--good:#3ed883;--bad:#ff5f6d;--blue:#60a9ff;--purple:#a77bff;
+  --shadow:0 18px 55px rgba(0,0,0,.32)
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:radial-gradient(circle at 50% -10%,#192131 0,#090b10 39%,#07080c 100%);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input{font:inherit}button{cursor:pointer}button:focus-visible{outline:3px solid rgba(255,211,56,.45);outline-offset:2px}
+.app{width:min(1180px,100%);margin:0 auto;padding:16px 14px 42px}
+.topbar{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;margin-bottom:13px}.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.logo{width:40px;height:40px;border-radius:13px;background:linear-gradient(145deg,var(--accent),#ff9d2f);display:grid;place-items:center;color:#111318;font-weight:1000;box-shadow:0 8px 28px rgba(255,211,56,.18)}
+.brand h1{margin:0;font-size:20px;letter-spacing:.08em}.brand p{margin:2px 0 0;color:var(--muted);font-size:12px}.topactions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+.ghost,.modeBtn,.smallBtn,.secondary,.tab,.skinBtn{border:1px solid var(--line);background:#11151d;color:var(--text);border-radius:12px;min-height:42px;padding:0 13px}.ghost:hover,.modeBtn:hover,.smallBtn:hover,.secondary:hover,.tab:hover,.skinBtn:hover{border-color:#3a4658}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:14px}.card{background:linear-gradient(180deg,rgba(19,24,33,.97),rgba(13,17,24,.97));border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow)}
+.gameCard{padding:17px;overflow:hidden;position:relative}.modeStrip{display:flex;gap:8px;overflow:auto;padding-bottom:4px;margin-bottom:12px;scrollbar-width:none}.modeStrip::-webkit-scrollbar{display:none}.modeBtn{white-space:nowrap;color:var(--muted)}.modeBtn.active{background:var(--accent);color:#111318;border-color:var(--accent);font-weight:950}
+.hud{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:13px}.hudBox{background:#0d1118;border:1px solid var(--line);border-radius:14px;padding:9px 10px;min-width:0}.hudLabel{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em}.hudVal{font-size:18px;font-weight:950;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.rankBeat{grid-column:span 2}.rankBeat .hudVal{font-size:13px;color:var(--accent)}
+.stage{position:relative;min-height:458px;border-radius:22px;border:1px solid #212a38;background:radial-gradient(circle at 50% 8%,rgba(255,211,56,.055),transparent 27%),linear-gradient(180deg,#0c1016,#090c11);overflow:hidden;padding:18px;display:flex;flex-direction:column;align-items:center;transition:border-color .25s,box-shadow .25s}
+.stage::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px);background-size:28px 28px;mask-image:linear-gradient(to bottom,black,transparent 82%);pointer-events:none}.stage.boss{border-color:#5a4520;box-shadow:inset 0 0 70px rgba(255,151,47,.055)}
+.kicker{position:relative;z-index:1;color:var(--muted);font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:850}.target{position:relative;z-index:1;font-size:clamp(48px,10vw,88px);font-weight:1000;line-height:1;letter-spacing:-.055em;margin:11px 0 2px;font-variant-numeric:tabular-nums}.target small{font-size:.24em;letter-spacing:.08em;color:var(--muted);margin-left:5px}.subtarget{position:relative;z-index:1;color:var(--muted);font-size:13px;min-height:20px;text-align:center}
+.timerShell{position:relative;width:min(520px,100%);margin-top:21px;background:#06080b;border:1px solid #2c3544;border-radius:18px;min-height:122px;display:grid;place-items:center;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,.025)}.timer{font-size:clamp(44px,10vw,74px);font-weight:950;font-variant-numeric:tabular-nums;letter-spacing:.02em}.calibrationBar{position:absolute;left:0;right:0;bottom:0;height:4px;background:#151b24}.calibrationFill{height:100%;width:0;background:var(--accent);transition:width .04s linear}
+.shutter{position:absolute;inset:0;display:flex;flex-direction:column;pointer-events:none}.shutterTop,.shutterBottom{height:50%;background:linear-gradient(#181f2b,#0c1118);transition:transform .28s cubic-bezier(.2,.8,.2,1)}.shutterTop{transform:translateY(-101%);border-bottom:1px solid #313c4d}.shutterBottom{transform:translateY(101%);border-top:1px solid #313c4d}.shutter.closed .shutterTop{transform:translateY(0)}.shutter.closed .shutterBottom{transform:translateY(0)}.hiddenLabel{position:absolute;inset:0;display:grid;place-items:center;font-size:16px;font-weight:1000;letter-spacing:.15em;opacity:0;transition:opacity .15s;z-index:2}.shutter.closed .hiddenLabel{opacity:1}
+.buzzerWrap{position:relative;z-index:3;margin-top:auto;padding-top:25px;width:min(430px,100%)}.buzzerBase{background:#242b36;border:1px solid #394353;border-radius:999px;padding:10px 12px 15px;box-shadow:0 15px 0 #090b0f,0 20px 26px rgba(0,0,0,.35)}.buzzer{touch-action:manipulation;width:100%;min-height:90px;border-radius:999px;border:0;color:#17130a;font-weight:1000;font-size:26px;letter-spacing:.08em;transform:translateY(0);transition:transform .06s,box-shadow .06s,filter .2s;background:radial-gradient(circle at 50% 20%,#fff1a4 0 4%,#ffd740 35%,#e4a500 100%);box-shadow:inset 0 -12px 0 rgba(126,78,0,.22),0 7px 0 #a76e00}.buzzer:active,.buzzer.down{transform:translateY(7px);box-shadow:inset 0 -5px 0 rgba(0,0,0,.22),0 0 0 #555}.buzzer.stop{filter:saturate(1.12)}.buzzer.next{filter:hue-rotate(75deg)}
+.buzzer[data-skin="Steel"]{background:radial-gradient(circle at 50% 18%,#fff 0 3%,#cdd5df 35%,#677281 100%);box-shadow:inset 0 -12px 0 rgba(24,33,43,.28),0 7px 0 #48515d;color:#121820}.buzzer[data-skin="Neon"]{background:radial-gradient(circle at 50% 18%,#eaffff 0 3%,#4df1e8 34%,#8a45ff 100%);box-shadow:inset 0 -12px 0 rgba(39,0,92,.26),0 7px 0 #49258a;color:#071314}.buzzer[data-skin="Carbon"]{background:radial-gradient(circle at 50% 20%,#ffba69 0 3%,#252b33 32%,#07090c 100%);box-shadow:inset 0 -12px 0 rgba(0,0,0,.65),0 7px 0 #000;color:#ffd49b;border:1px solid #474f5a}.buzzer[data-skin="Chrono"]{background:radial-gradient(circle at 50% 17%,#fffbd4 0 4%,#ffe45e 32%,#b97600 100%);box-shadow:inset 0 -12px 0 rgba(88,47,0,.3),0 7px 0 #7b4a00,0 0 35px rgba(255,211,56,.17);color:#231700}
+.help{position:relative;z-index:2;color:var(--muted);font-size:12px;margin-top:10px;text-align:center}.fx{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:5}.particle{position:absolute;width:7px;height:7px;border-radius:2px;background:var(--accent);animation:fly .78s ease-out forwards}.particle.alt{background:var(--good)}@keyframes fly{to{transform:translate(var(--dx),var(--dy)) rotate(320deg);opacity:0}}
+.resultLayer{position:absolute;inset:0;background:rgba(6,8,12,.955);backdrop-filter:blur(11px);display:none;align-items:center;justify-content:center;padding:22px;z-index:20}.resultLayer.show{display:flex}.resultCard{width:min(540px,100%);text-align:center}.grade{font-size:14px;letter-spacing:.18em;text-transform:uppercase;font-weight:1000;color:var(--accent)}.resultTarget{font-size:12px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-top:8px}.resultTime{font-size:clamp(60px,12vw,96px);font-weight:1000;letter-spacing:-.055em;font-variant-numeric:tabular-nums;margin:8px 0}.delta{font-size:28px;font-weight:1000;opacity:0;transform:translateY(5px);transition:.22s}.delta.good{color:var(--good)}.delta.bad{color:var(--bad)}.delta.revealed{opacity:1;transform:none}.resultDetails{opacity:0;transform:translateY(8px);transition:.25s}.resultDetails.revealed{opacity:1;transform:none}.resultMeta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0}.metaBox{padding:10px;background:#111722;border:1px solid var(--line);border-radius:13px}.metaBox span{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.1em}.metaBox strong{display:block;margin-top:3px}.rankMove{margin:7px 0 13px;color:var(--accent);font-weight:850;font-size:13px;min-height:20px}.revealBar{height:5px;background:#212937;border-radius:99px;overflow:hidden;margin:10px auto 4px;width:min(360px,100%)}.revealFill{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--good));transition:width .65s ease}.primary{border:0;background:var(--accent);color:#15120b;font-weight:1000;border-radius:12px;min-height:46px;padding:0 16px}.primary[disabled]{opacity:.35;cursor:not-allowed}.perfectHalo{animation:perfectHalo .65s ease}@keyframes perfectHalo{0%{box-shadow:inset 0 0 0 0 rgba(255,211,56,0)}45%{box-shadow:inset 0 0 110px 35px rgba(255,211,56,.18)}100%{box-shadow:inset 0 0 0 0 rgba(255,211,56,0)}}.shake{animation:shake .18s linear}@keyframes shake{25%{transform:translateX(-3px)}50%{transform:translateX(3px)}75%{transform:translateX(-2px)}}
+.side{display:flex;flex-direction:column;gap:12px}.sideCard{padding:15px}.sideTitle{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:9px}.sideTitle h3{margin:0;font-size:14px;letter-spacing:.06em}.dailyTag{display:inline-flex;padding:5px 8px;border-radius:999px;border:1px solid #384355;color:var(--muted);font-size:10px;font-weight:850;letter-spacing:.08em}.liveRank{font-size:36px;font-weight:1000;letter-spacing:-.04em}.liveRank small{font-size:12px;color:var(--muted);display:block;letter-spacing:.05em}.toBeat{margin-top:9px;padding:11px;border-radius:12px;background:#0c1118;border:1px solid var(--line);font-size:13px}.toBeat strong{color:var(--accent)}.lifeRow{display:flex;gap:5px}.heart{font-size:18px;filter:grayscale(1);opacity:.3}.heart.on{filter:none;opacity:1}.dnaGauge{height:8px;background:#252d3a;border-radius:99px;overflow:hidden;margin:10px 0;position:relative}.dnaGauge::after{content:"";position:absolute;left:50%;top:0;bottom:0;width:1px;background:#6e7889}.dnaNeedle{height:100%;width:50%;background:linear-gradient(90deg,var(--blue),var(--accent2));transform-origin:left}.statGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.statMini{background:#0c1118;border:1px solid var(--line);border-radius:12px;padding:10px}.statMini span{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.08em}.statMini strong{font-size:16px}.progressTrack{height:7px;background:#242c38;border-radius:99px;overflow:hidden;margin-top:10px}.progressFill{height:100%;background:var(--accent);width:0}.smallBtn{width:100%;margin-top:10px;font-weight:850}
+.endPanel{display:none;margin-top:14px;padding:16px;border:1px solid var(--line);border-radius:18px;background:#0d1219}.endPanel.show{display:block}.endTitle{font-size:24px;font-weight:1000}.endSub{color:var(--muted);font-size:13px;margin-top:3px}.endGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}.endStat{padding:11px;border-radius:12px;background:#121824;border:1px solid var(--line)}.endStat span{display:block;font-size:10px;color:var(--muted);text-transform:uppercase}.endStat strong{font-size:18px}.dnaPanel{margin-top:10px;padding:13px;border:1px solid #2b3442;border-radius:14px;background:#101620}.dnaHeadline{font-size:18px;font-weight:1000}.actionRow{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.secondary{min-height:46px}.shareGrid{font-size:25px;letter-spacing:4px;margin-top:8px}.pbBadge{display:inline-flex;margin-top:8px;padding:5px 8px;border-radius:999px;background:rgba(62,216,131,.12);color:var(--good);font-size:11px;font-weight:900;letter-spacing:.08em}
+.overlay{position:fixed;inset:0;background:rgba(4,6,9,.86);backdrop-filter:blur(10px);z-index:100;display:none;align-items:center;justify-content:center;padding:16px}.overlay.show{display:flex}.modal{width:min(700px,100%);max-height:min(780px,90vh);overflow:auto;background:#0d1219;border:1px solid #2b3442;border-radius:22px;box-shadow:0 30px 90px rgba(0,0,0,.46);padding:18px}.modalHead{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:14px}.modalHead h2{font-size:18px;margin:0}.close{width:42px;height:42px;border-radius:12px;border:1px solid var(--line);background:#131923;color:white;font-size:24px}.tabs{display:flex;gap:7px;margin-bottom:12px}.tab{flex:1;min-height:40px;color:var(--muted)}.tab.active{background:var(--accent);border-color:var(--accent);color:#15120b;font-weight:950}.leaderRow{display:grid;grid-template-columns:56px 1fr auto;gap:10px;padding:11px;border-bottom:1px solid #202735;align-items:center}.leaderRow.you{background:rgba(255,211,56,.08)}.rankPos{font-weight:1000}.playerName{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.scoreVal{font-variant-numeric:tabular-nums;font-weight:900}.empty{color:var(--muted);padding:18px;text-align:center}
+.onboard{width:min(580px,100%);text-align:center}.onboardIcon{width:74px;height:74px;border-radius:22px;background:#161d28;border:1px solid #313b4b;display:grid;place-items:center;margin:3px auto 15px;font-size:34px}.onboard h2{font-size:28px;margin:0 0 8px}.onboard p{color:var(--muted);line-height:1.55;margin:0 auto;max-width:460px}.demoClock{font-variant-numeric:tabular-nums;font-size:42px;font-weight:1000;margin:18px 0}.dots{display:flex;justify-content:center;gap:7px;margin:16px 0}.dot{width:7px;height:7px;border-radius:50%;background:#343d4b}.dot.on{background:var(--accent)}
+.profileGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.profileSection{border:1px solid var(--line);border-radius:16px;padding:13px;background:#101620}.profileSection h3{margin:0 0 9px;font-size:14px}.skinGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.skinBtn{min-height:64px;text-align:left;padding:9px}.skinBtn.selected{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}.skinBtn.locked{opacity:.45}.skinBtn strong,.skinBtn span{display:block}.skinBtn span{font-size:10px;color:var(--muted);margin-top:3px}.achievement{display:grid;grid-template-columns:30px 1fr auto;gap:9px;align-items:center;padding:9px 0;border-bottom:1px solid #202735}.achievement:last-child{border-bottom:0}.achIcon{font-size:20px;opacity:.35}.achievement.unlocked .achIcon{opacity:1}.achText strong,.achText span{display:block}.achText span{font-size:11px;color:var(--muted)}.achState{font-size:10px;color:var(--muted);font-weight:850}.achievement.unlocked .achState{color:var(--good)}.historyRow{display:grid;grid-template-columns:1fr auto auto;gap:8px;padding:8px 0;border-bottom:1px solid #202735;font-size:12px}.historyRow span{color:var(--muted)}
+.challengeBanner{display:none;margin-bottom:11px;padding:11px 13px;border:1px solid #4a3c18;background:rgba(255,211,56,.07);border-radius:13px;color:#f8e8a2;font-size:13px}.challengeBanner.show{display:block}.versusBox{margin-top:11px;padding:12px;border:1px solid var(--line);border-radius:13px;background:#0e141d}.versusGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.versusSide{padding:9px;border-radius:11px;background:#151c27}.versusSide span{display:block;font-size:10px;color:var(--muted);text-transform:uppercase}.versusSide strong{font-size:20px}.winner{margin-top:9px;font-weight:1000;color:var(--accent)}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%) translateY(20px);background:#111722;border:1px solid #2d3746;padding:10px 14px;border-radius:12px;opacity:0;pointer-events:none;transition:.2s;z-index:200}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media(max-width:860px){.layout{grid-template-columns:1fr}.side{display:grid;grid-template-columns:1fr 1fr}.sideCard:last-child{grid-column:1/-1}}
+@media(max-width:620px){.app{padding:9px 9px 28px}.topbar{grid-template-columns:1fr}.topactions{justify-content:flex-start}.gameCard{padding:10px;border-radius:18px}.hud{grid-template-columns:repeat(3,1fr)}.rankBeat{grid-column:span 3}.stage{min-height:442px;padding:14px}.side{grid-template-columns:1fr}.sideCard:last-child{grid-column:auto}.endGrid{grid-template-columns:1fr 1fr}.resultMeta{grid-template-columns:1fr 1fr}.resultMeta .metaBox:last-child{grid-column:1/-1}.brand p{display:none}.profileGrid{grid-template-columns:1fr}.target{margin-top:9px}.topactions .ghost{padding:0 10px}.resultTime{font-size:64px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}.shutterTop,.shutterBottom,.resultDetails,.delta,.revealFill{transition:none!important}.particle{animation:none!important;display:none}}
+</style>
+</head>
+<body>
+<div class="app" id="ticklessApp">
+  <div class="topbar">
+    <div class="brand"><div class="logo">T</div><div><h1>TICKLESS</h1><p>Master your internal clock.</p></div></div>
+    <div class="topactions">
+      <button class="ghost" id="howBtn" type="button">How to Play</button>
+      <button class="ghost" id="profileBtn" type="button">Profile</button>
+      <button class="ghost" id="soundBtn" type="button">Sound: On</button>
+      <button class="ghost" id="leaderBtn" type="button">Leaderboard</button>
+    </div>
+  </div>
+
+  <div class="challengeBanner" id="challengeBanner"></div>
+
+  <div class="layout">
+    <main class="card gameCard">
+      <div class="modeStrip" id="modeStrip">
+        <button class="modeBtn active" data-mode="calibration" type="button">Calibration</button>
+        <button class="modeBtn" data-mode="daily" type="button">Daily Five</button>
+        <button class="modeBtn" data-mode="blind" type="button">Blind</button>
+        <button class="modeBtn" data-mode="sudden" type="button">Sudden Death</button>
+        <button class="modeBtn" data-mode="rush" type="button">Rush</button>
+        <button class="modeBtn" data-mode="double" type="button">Double Tap</button>
+        <button class="modeBtn" data-mode="versus" type="button">Friend Challenge</button>
+      </div>
+
+      <div class="hud">
+        <div class="hudBox"><div class="hudLabel">Score</div><div class="hudVal" id="scoreEl">0</div></div>
+        <div class="hudBox"><div class="hudLabel">Round</div><div class="hudVal" id="roundEl">0/5</div></div>
+        <div class="hudBox"><div class="hudLabel">Combo</div><div class="hudVal" id="comboEl">×1</div></div>
+        <div class="hudBox"><div class="hudLabel">Lives</div><div class="hudVal lifeRow" id="livesEl"></div></div>
+        <div class="hudBox rankBeat"><div class="hudLabel">Rank to beat</div><div class="hudVal" id="rankBeatEl">Loading…</div></div>
+      </div>
+
+      <section class="stage" id="stage">
+        <div class="fx" id="fx"></div>
+        <div class="kicker" id="kicker">VAULT SEAL • TARGET TIME</div>
+        <div class="target" id="targetEl">8.370<small>s</small></div>
+        <div class="subtarget" id="subtarget">Watch the clock for exactly 3 seconds. Then feel the rest.</div>
+
+        <div class="timerShell">
+          <div class="timer" id="timerEl">0.000</div>
+          <div class="calibrationBar"><div class="calibrationFill" id="calibrationFill"></div></div>
+          <div class="shutter" id="shutter"><div class="shutterTop"></div><div class="shutterBottom"></div><div class="hiddenLabel" id="hiddenLabel">FEEL THE TIME</div></div>
+        </div>
+
+        <div class="buzzerWrap">
+          <div class="buzzerBase"><button class="buzzer" id="buzzer" data-skin="Classic" type="button">START</button></div>
+          <div class="help" id="helpText">Tap START, then tap again when you believe the target time has elapsed. Space/Enter also works.</div>
+        </div>
+
+        <div class="resultLayer" id="resultLayer">
+          <div class="resultCard">
+            <div class="grade" id="gradeEl">TIME LOCKED</div>
+            <div class="resultTarget" id="resultTargetEl">TARGET 8.370s</div>
+            <div class="resultTime" id="resultTimeEl">…</div>
+            <div class="delta" id="deltaEl">&nbsp;</div>
+            <div class="resultDetails" id="resultDetails">
+              <div class="revealBar"><div class="revealFill" id="revealFill"></div></div>
+              <div class="resultMeta">
+                <div class="metaBox"><span>Accuracy</span><strong id="accuracyEl">—</strong></div>
+                <div class="metaBox"><span>Points</span><strong id="pointsEl">—</strong></div>
+                <div class="metaBox"><span>Streak</span><strong id="streakEl">—</strong></div>
+              </div>
+              <div class="rankMove" id="rankMoveEl"></div>
+              <div class="versusBox" id="versusBox" style="display:none"></div>
+              <button class="primary" id="continueBtn" type="button">NEXT TARGET</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="endPanel" id="endPanel">
+        <div class="endTitle" id="endTitle">RUN COMPLETE</div>
+        <div class="endSub" id="endSub">Your internal clock profile has been updated.</div>
+        <div id="pbBadge"></div>
+        <div class="endGrid">
+          <div class="endStat"><span>Score</span><strong id="endScore">0</strong></div>
+          <div class="endStat"><span>Avg error</span><strong id="endAvg">0 ms</strong></div>
+          <div class="endStat"><span>Best hit</span><strong id="endBest">0 ms</strong></div>
+          <div class="endStat"><span>Rank</span><strong id="endRank">—</strong></div>
+        </div>
+        <div class="dnaPanel">
+          <div class="dailyTag">TIME DNA</div>
+          <div class="dnaHeadline" id="dnaHeadline">Your internal clock is still learning.</div>
+          <div id="dnaDetail" style="color:var(--muted);font-size:13px;margin-top:5px"></div>
+          <div class="shareGrid" id="dailyGrid"></div>
+        </div>
+        <div class="actionRow">
+          <button class="primary" id="playAgainBtn" type="button">PLAY AGAIN</button>
+          <button class="secondary" id="shareDailyBtn" type="button" style="display:none">SHARE DAILY</button>
+          <button class="secondary" id="shareResultBtn" type="button">SHARE RESULT</button>
+          <button class="secondary" id="challengeBtn" type="button">CHALLENGE A FRIEND</button>
+          <button class="secondary" id="rematchBtn" type="button" style="display:none">REMATCH</button>
+          <button class="secondary" id="endLeaderBtn" type="button">VIEW RANKING</button>
+        </div>
+      </section>
+    </main>
+
+    <aside class="side">
+      <section class="card sideCard">
+        <div class="sideTitle"><h3>LIVE RANK</h3><span class="dailyTag" id="rankSource">LOCAL PREVIEW</span></div>
+        <div class="liveRank" id="liveRankEl">#—<small>Projected finish</small></div>
+        <div class="toBeat" id="toBeatBox">Complete a round to see who you need to beat.</div>
+      </section>
+
+      <section class="card sideCard">
+        <div class="sideTitle"><h3>TIME DNA</h3><span class="dailyTag" id="sampleCount">0 SAMPLES</span></div>
+        <div id="dnaBias">No timing profile yet.</div>
+        <div class="dnaGauge"><div class="dnaNeedle" id="dnaNeedle"></div></div>
+        <div class="statGrid">
+          <div class="statMini"><span>Avg bias</span><strong id="biasStat">—</strong></div>
+          <div class="statMini"><span>Consistency</span><strong id="consistencyStat">—</strong></div>
+          <div class="statMini"><span>Best range</span><strong id="rangeStat">—</strong></div>
+          <div class="statMini"><span>Best hit</span><strong id="bestStat">—</strong></div>
+        </div>
+      </section>
+
+      <section class="card sideCard">
+        <div class="sideTitle"><h3>PROGRESSION</h3><span class="dailyTag" id="levelTag">LEVEL 1</span></div>
+        <div style="display:flex;justify-content:space-between;gap:10px"><strong id="xpEl">0 XP</strong><span style="color:var(--muted);font-size:12px" id="dailyStreakEl">Daily ×0</span></div>
+        <div class="progressTrack"><div class="progressFill" id="xpFill"></div></div>
+        <div style="color:var(--muted);font-size:12px;margin-top:8px" id="skinEl">Buzzer: Classic</div>
+        <button class="smallBtn" id="openProfileBtn" type="button">LOCKER & ACHIEVEMENTS</button>
+      </section>
+    </aside>
+  </div>
+</div>
+
+<div class="overlay" id="leaderOverlay"><div class="modal">
+  <div class="modalHead"><h2>GLOBAL LEADERBOARD</h2><button class="close" id="leaderClose" type="button" aria-label="Close">×</button></div>
+  <div class="tabs" id="leaderTabs"><button class="tab active" data-period="daily" type="button">TODAY</button><button class="tab" data-period="weekly" type="button">WEEK</button><button class="tab" data-period="all" type="button">ALL TIME</button></div>
+  <div id="leaderSummary" style="color:var(--muted);font-size:13px;margin-bottom:8px">Loading…</div><div id="leaderList"></div>
+</div></div>
+
+<div class="overlay" id="onboardOverlay"><div class="modal onboard">
+  <div class="onboardIcon" id="onboardIcon">◎</div><h2 id="onboardTitle">Memorize the target</h2><p id="onboardText">Every round gives you one exact time. Your job is to stop the watch as close to it as humanly possible.</p><div class="demoClock" id="onboardDemo">8.370s</div><div class="dots" id="onboardDots"></div>
+  <div class="actionRow" style="justify-content:center"><button class="secondary" id="onboardBack" type="button">BACK</button><button class="primary" id="onboardNext" type="button">NEXT</button></div>
+</div></div>
+
+<div class="overlay" id="profileOverlay"><div class="modal">
+  <div class="modalHead"><h2>PLAYER PROFILE</h2><button class="close" id="profileClose" type="button" aria-label="Close">×</button></div>
+  <div class="profileGrid">
+    <section class="profileSection"><h3>BUZZER LOCKER</h3><div class="skinGrid" id="skinGrid"></div></section>
+    <section class="profileSection"><h3>PLAYER STATS</h3><div class="statGrid" id="profileStats"></div></section>
+    <section class="profileSection"><h3>ACHIEVEMENTS</h3><div id="achievementList"></div></section>
+    <section class="profileSection"><h3>RECENT RUNS</h3><div id="historyList"></div></section>
+  </div>
+</div></div>
+
+<div class="toast" id="toast">Saved.</div>
+<script>
+(()=>{
+'use strict';
+
+const VERSION='1.0.0-rc1';
+const API_BASE='https://catalystplay.net/api';
+const STORAGE='tickless-profile-v1';
+const GAME_IDS={calibration:'tickless-calibration',daily:'tickless-daily',sudden:'tickless-sudden',rush:'tickless-rush'};
+const RANKED_MODES=new Set(Object.keys(GAME_IDS));
+const MODE_LABELS={calibration:'Calibration',daily:'Daily Five',blind:'Blind',sudden:'Sudden Death',rush:'Rush',double:'Double Tap',versus:'Friend Challenge'};
+const MISS_LIMIT=.500;
+const MISSIONS=['VAULT SEAL','REACTOR SYNC','LAUNCH WINDOW','SIGNAL LOCK','FINAL LOCK'];
+const SKINS=[
+  {name:'Classic',xp:0,desc:'Original arcade yellow'},
+  {name:'Steel',xp:750,desc:'Unlocked at 750 XP'},
+  {name:'Neon',xp:2000,desc:'Unlocked at 2,000 XP'},
+  {name:'Carbon',xp:5000,desc:'Unlocked at 5,000 XP'},
+  {name:'Chrono',achievement:'sub10',desc:'Hit within 10 ms'}
+];
+const ACHIEVEMENTS=[
+  {id:'first_run',icon:'◆',name:'First Lock',desc:'Complete your first run.'},
+  {id:'sub100',icon:'◉',name:'Dialed In',desc:'Stop within 100 ms.'},
+  {id:'sub25',icon:'✦',name:'Photo Finish',desc:'Stop within 25 ms.'},
+  {id:'sub10',icon:'★',name:'Perfect Ten',desc:'Stop within 10 ms.'},
+  {id:'sub5',icon:'✺',name:'Time Lord',desc:'Stop within 5 ms.'},
+  {id:'streak5',icon:'▲',name:'On Fire',desc:'Build a 5-hit GOOD+ streak.'},
+  {id:'samples50',icon:'∞',name:'Internal Clock',desc:'Record 50 timing samples.'},
+  {id:'daily3',icon:'☀',name:'Daily Habit',desc:'Complete the Daily Five 3 days in a row.'},
+  {id:'sudden10',icon:'⚡',name:'Cold Blooded',desc:'Reach round 10 in Sudden Death.'},
+  {id:'score10k',icon:'♛',name:'Five Digits',desc:'Score 10,000+ in a ranked run.'}
+];
+const ONBOARD=[
+  {icon:'◎',title:'Memorize the target',text:'Every round gives you one exact time. Your job is to stop the watch as close to it as humanly possible.',demo:'8.370s'},
+  {icon:'3',title:'Calibrate for 3 seconds',text:'When you press START, the live clock is visible for exactly three seconds. Use those seconds to feel the pace of real time.',demo:'0.000 → 3.000'},
+  {icon:'▰',title:'Then the clock disappears',text:'The shutter closes. No beat. No countdown. Trust your internal clock and press STOP when you believe the target has arrived.',demo:'FEEL THE TIME'},
+  {icon:'±',title:'Every millisecond counts',text:'You will see your exact error, accuracy, combo, rank movement, and a growing Time DNA profile. Get closer. Climb higher.',demo:'+0.021s'}
+];
+
+const $=s=>document.querySelector(s);
+const els={
+  modeStrip:$('#modeStrip'),score:$('#scoreEl'),round:$('#roundEl'),combo:$('#comboEl'),lives:$('#livesEl'),rankBeat:$('#rankBeatEl'),stage:$('#stage'),
+  kicker:$('#kicker'),target:$('#targetEl'),subtarget:$('#subtarget'),timer:$('#timerEl'),calFill:$('#calibrationFill'),shutter:$('#shutter'),hidden:$('#hiddenLabel'),buzzer:$('#buzzer'),help:$('#helpText'),fx:$('#fx'),
+  result:$('#resultLayer'),grade:$('#gradeEl'),resultTarget:$('#resultTargetEl'),resultTime:$('#resultTimeEl'),delta:$('#deltaEl'),details:$('#resultDetails'),accuracy:$('#accuracyEl'),points:$('#pointsEl'),streak:$('#streakEl'),rankMove:$('#rankMoveEl'),reveal:$('#revealFill'),cont:$('#continueBtn'),versusBox:$('#versusBox'),
+  endPanel:$('#endPanel'),endTitle:$('#endTitle'),endSub:$('#endSub'),endScore:$('#endScore'),endAvg:$('#endAvg'),endBest:$('#endBest'),endRank:$('#endRank'),pbBadge:$('#pbBadge'),dnaHeadline:$('#dnaHeadline'),dnaDetail:$('#dnaDetail'),dailyGrid:$('#dailyGrid'),playAgain:$('#playAgainBtn'),shareDaily:$('#shareDailyBtn'),shareResult:$('#shareResultBtn'),challenge:$('#challengeBtn'),rematch:$('#rematchBtn'),endLeader:$('#endLeaderBtn'),
+  leaderBtn:$('#leaderBtn'),leaderOverlay:$('#leaderOverlay'),leaderClose:$('#leaderClose'),leaderTabs:$('#leaderTabs'),leaderSummary:$('#leaderSummary'),leaderList:$('#leaderList'),
+  liveRank:$('#liveRankEl'),toBeat:$('#toBeatBox'),rankSource:$('#rankSource'),sampleCount:$('#sampleCount'),dnaBias:$('#dnaBias'),dnaNeedle:$('#dnaNeedle'),biasStat:$('#biasStat'),consistencyStat:$('#consistencyStat'),rangeStat:$('#rangeStat'),bestStat:$('#bestStat'),
+  xp:$('#xpEl'),xpFill:$('#xpFill'),levelTag:$('#levelTag'),dailyStreak:$('#dailyStreakEl'),skin:$('#skinEl'),openProfile:$('#openProfileBtn'),profileBtn:$('#profileBtn'),profileOverlay:$('#profileOverlay'),profileClose:$('#profileClose'),skinGrid:$('#skinGrid'),profileStats:$('#profileStats'),achievementList:$('#achievementList'),historyList:$('#historyList'),
+  sound:$('#soundBtn'),how:$('#howBtn'),onboardOverlay:$('#onboardOverlay'),onboardIcon:$('#onboardIcon'),onboardTitle:$('#onboardTitle'),onboardText:$('#onboardText'),onboardDemo:$('#onboardDemo'),onboardDots:$('#onboardDots'),onboardBack:$('#onboardBack'),onboardNext:$('#onboardNext'),
+  challengeBanner:$('#challengeBanner'),toast:$('#toast')
+};
+
+let mode='calibration',state='idle',round=0,maxRounds=5,lives=3,score=0,streak=0,bestMultiplier=1,target=8.37,target2=null,startAt=0,raf=0,rushEndsAt=0,doubleHits=[];
+let roundErrors=[],signedErrors=[],runResults=[],runRankBefore=null,lastRunRank=null,soundOn=true,revealTimers=[],onboardIndex=0,currentBoardPeriod='daily';
+let challengeData=null,dailyRanked=true,activeBoard=null,boardCache=new Map(),sdkCache=new Map();
+let profile=loadProfile();
+
+function defaultProfile(){return {xp:0,skin:'Classic',history:[],runs:[],achievements:[],onboarded:false,daily:{},dailyStreak:0,bestDailyStreak:0,lastDailyDate:null,stats:{runs:0,maxStreak:0,perfects:0},bestByMode:{}}}
+function normalizeProfile(p){const d=defaultProfile();p=p&&typeof p==='object'?p:{};const out=Object.assign(d,p);out.stats=Object.assign(d.stats,p.stats||{});out.bestByMode=Object.assign({},p.bestByMode||{});out.history=Array.isArray(p.history)?p.history:[];out.runs=Array.isArray(p.runs)?p.runs:[];out.achievements=Array.isArray(p.achievements)?p.achievements:[];out.daily=p.daily&&typeof p.daily==='object'?p.daily:{};return out}
+function loadProfile(){try{return normalizeProfile(JSON.parse(localStorage.getItem(STORAGE)||'null'))}catch(e){return defaultProfile()}}
+function saveProfile(){try{localStorage.setItem(STORAGE,JSON.stringify(profile))}catch(e){}}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function clamp(n,a,b){return Math.max(a,Math.min(b,n))}
+function deviceType(){const coarse=matchMedia&&matchMedia('(pointer:coarse)').matches;const w=Math.min(innerWidth||9999,innerHeight||9999);return coarse?(w<600?'mobile':'tablet'):'desktop'}
+function dateKey(){const d=new Date();return d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0')}
+function dayDiff(a,b){if(!a||!b)return null;return Math.round((Date.parse(b+'T00:00:00Z')-Date.parse(a+'T00:00:00Z'))/86400000)}
+function formatMs(s){return Math.round(s*1000)+' ms'}
+function modeIsRanked(){return RANKED_MODES.has(mode)&&(mode!=='daily'||dailyRanked)}
+function activeGameId(){return GAME_IDS[mode]||null}
+function getSdk(gameId=activeGameId()){
+  if(!gameId||!window.CatalystGameSDK?.init)return null;
+  if(sdkCache.has(gameId))return sdkCache.get(gameId);
+  try{const sdk=window.CatalystGameSDK.init({gameId});sdkCache.set(gameId,sdk);return sdk}catch(e){return null}
+}
+function track(name,props={}){try{const sdk=getSdk(GAME_IDS.calibration);if(sdk?.track)sdk.track(name,Object.assign({game_version:VERSION,mode,device_type:deviceType()},props))}catch(e){}}
+function playerIdFor(gameId){const sdk=getSdk(gameId);return sdk?.playerId||getSdk(GAME_IDS.calibration)?.playerId||''}
+function loadCatalystSDK(){if(window.CatalystGameSDK?.init){sdkCache.clear();els.rankSource.textContent='CATALYSTPLAY';loadBoard('daily',true);track('game_ready');return}const sc=document.createElement('script');sc.src='https://catalystplay.net/catalyst-game-sdk.js';sc.async=true;sc.onload=()=>{sdkCache.clear();els.rankSource.textContent='CATALYSTPLAY';loadBoard('daily',true);track('game_ready')};sc.onerror=()=>{els.rankSource.textContent='LOCAL PREVIEW'};document.head.appendChild(sc)}
+
+async function fetchBoard(gameId,period='daily',limit=50){
+  if(!gameId)return null;const pid=playerIdFor(gameId);const params=new URLSearchParams({game_id:gameId,period:String(period),limit:String(limit)});if(pid)params.set('player_id',pid);
+  try{const r=await fetch(API_BASE+'/leaderboard?'+params.toString(),{headers:{accept:'application/json'}});if(!r.ok)return null;return await r.json()}catch(e){return null}
+}
+function mockBoard(gameId,period='daily'){
+  const names=['Nova','Mako','Pixel','Iris','Jax','Mina','Vex','Luma','Echo','Kite','Rin','Sol','Ari','Zed'];let x=(gameId+period+dateKey()).split('').reduce((a,c)=>(a*33+c.charCodeAt(0))>>>0,5381);
+  const rnd=()=>{x=(x*1664525+1013904223)>>>0;return x/4294967296};
+  const scale=gameId?.includes('rush')?18000:gameId?.includes('sudden')?13000:11000;
+  const arr=names.map((display_name,i)=>({player_id:'mock'+i,display_name,score:Math.round(1800+rnd()*scale)})).sort((a,b)=>b.score-a.score).map((e,i)=>Object.assign({rank:i+1},e));
+  return {ok:true,entries:arr,total_players:243,you:null,mock:true}
+}
+async function loadBoard(period='daily',force=false){
+  const gid=activeGameId();if(!gid){activeBoard=null;updateRankToBeat();return null}const key=gid+'|'+period;let b=!force?boardCache.get(key):null;if(!b)b=await fetchBoard(gid,period,50);if(!b)b=mockBoard(gid,period);boardCache.set(key,b);if(period==='daily'){activeBoard=b;els.rankSource.textContent=b.mock?'LOCAL PREVIEW':'CATALYSTPLAY';updateRankToBeat()}return b
+}
+function percentileText(rank,total){rank=Number(rank);total=Number(total);if(!Number.isFinite(rank)||rank<1||!Number.isFinite(total)||total<1)return '';return 'TOP '+Math.max(1,Math.ceil(rank/total*100))+'%'}
+function projectedScore(){if(round<=0)return 0;const rate=score/Math.max(1,round);if(mode==='rush'){const remaining=Math.max(0,rushEndsAt-performance.now());return Math.round(score+rate*(remaining/Math.max(2200,(performance.now()-startAt)||3000)))}if(mode==='sudden')return score;return Math.round(score+rate*Math.max(0,maxRounds-round))}
+function rankInfo(board,value){const entries=Array.isArray(board?.entries)?board.entries:[];const rank=entries.filter(e=>Number(e.score)>value).length+1;const next=entries.filter(e=>Number(e.score)>value).sort((a,b)=>Number(a.score)-Number(b.score))[0]||null;return {rank,next,total:board?.total_players||entries.length}}
+function currentProjectedRank(){return activeBoard?.entries?.length?rankInfo(activeBoard,projectedScore()).rank:null}
+function updateRankToBeat(){
+  if(!modeIsRanked()){els.liveRank.innerHTML='—<small>Practice mode</small>';els.toBeat.textContent='This mode does not affect the competitive leaderboard.';els.rankBeat.textContent='Practice mode';return}
+  if(!activeBoard?.entries?.length){els.liveRank.innerHTML='#—<small>Loading ranking</small>';els.toBeat.textContent='CatalystPlay ranking is loading.';els.rankBeat.textContent='Loading ranking…';return}
+  const p=projectedScore(),info=rankInfo(activeBoard,p);els.liveRank.innerHTML='#'+info.rank+'<small>Projected • '+p.toLocaleString()+' pts</small>';
+  if(info.next){const gap=Math.max(1,Number(info.next.score)-p);els.toBeat.innerHTML='Beat <strong>#'+info.next.rank+' '+escapeHtml(info.next.display_name||'PLAYER')+'</strong> at <strong>'+Number(info.next.score).toLocaleString()+'</strong> pts <span style="color:var(--muted)">('+gap.toLocaleString()+' more)</span>.';els.rankBeat.textContent='#'+info.next.rank+' '+(info.next.display_name||'PLAYER')+' • +'+gap.toLocaleString()}
+  else{els.toBeat.innerHTML='<strong>You are pacing for #1.</strong>';els.rankBeat.textContent='#1 pace'}
+}
+
+function modeConfig(){return {
+  calibration:{rounds:5,lives:3,usesLives:true,visible:3,desc:'Watch the clock for exactly 3 seconds. Then feel the rest.'},
+  daily:{rounds:5,lives:3,usesLives:false,visible:3,desc:'Same five targets worldwide today. Your first completed run is ranked.'},
+  blind:{rounds:5,lives:3,usesLives:true,visible:0,desc:'No calibration. The clock vanishes immediately.'},
+  sudden:{rounds:999,lives:1,usesLives:true,visible:3,desc:'One miss over 0.500s ends the run.'},
+  rush:{rounds:999,lives:99,usesLives:false,visible:1.5,desc:'45 seconds. Score as many locks as possible.'},
+  double:{rounds:5,lives:3,usesLives:true,visible:3,desc:'Hit two target moments on one continuous clock.'},
+  versus:{rounds:1,lives:1,usesLives:false,visible:3,desc:challengeData?'One target. One attempt. Lowest timing error wins.':'Set a benchmark on one target, then send it to a friend to beat.'}
+}[mode]}
+function seeded(seed){let x=0;for(const c of seed)x=(x*31+c.charCodeAt(0))>>>0;return()=>{x=(x*1664525+1013904223)>>>0;return x/4294967296}}
+function dailyTargets(){const r=seeded('tickless-daily-'+dateKey());return Array.from({length:5},(_,i)=>Number((4.65+i*1.42+r()*2.35).toFixed(3)))}
+function chooseTarget(){
+  if(mode==='daily'){target=dailyTargets()[Math.min(round,4)];target2=null;return}
+  if(mode==='versus'&&challengeData){target=challengeData.target;target2=null;return}
+  if(mode==='rush'){target=Number((3.3+Math.random()*4).toFixed(3));target2=null;return}
+  if(mode==='blind'){target=Number((4.2+Math.random()*8).toFixed(3));target2=null;return}
+  if(mode==='sudden'){target=Number((5+Math.random()*10).toFixed(3));target2=null;return}
+  if(mode==='double'){target=Number((4+Math.random()*3).toFixed(3));target2=Number((target+2.5+Math.random()*3.2).toFixed(3));return}
+  const ranges=[[4.6,6.0],[5.8,7.6],[6.8,9.2],[8.4,11.2],[10.5,14.5]];const [a,b]=ranges[Math.min(round,ranges.length-1)];target=Number((a+Math.random()*(b-a)).toFixed(round<2?2:3));target2=null
+}
+function missionLabel(){if(mode==='daily')return 'DAILY LOCK '+Math.min(round+1,5)+' • TARGET TIME';if(mode==='rush')return 'RUSH LOCK • TARGET TIME';if(mode==='versus')return 'HEAD-TO-HEAD • TARGET TIME';const idx=Math.min(round,4);return MISSIONS[idx]+' • TARGET TIME'}
+function renderTarget(){if(mode==='double'&&target2!=null)els.target.innerHTML=target.toFixed(3)+' <small>&</small> '+target2.toFixed(3)+'<small>s</small>';else els.target.innerHTML=target.toFixed(3)+'<small>s</small>';els.kicker.textContent=missionLabel();els.stage.classList.toggle('boss',mode==='calibration'&&round===4)}
+function applySkin(){els.buzzer.dataset.skin=profile.skin||'Classic';els.skin.textContent='Buzzer: '+(profile.skin||'Classic')}
+function skinUnlocked(s){const xpReq=Number.isFinite(s.xp)?s.xp:0;return profile.xp>=xpReq&&(!s.achievement||profile.achievements.includes(s.achievement))}
+function levelInfo(){const level=Math.max(1,Math.floor(Math.sqrt(profile.xp/260))+1);const prev=260*(level-1)*(level-1),next=260*level*level;return {level,prev,next,pct:clamp((profile.xp-prev)/(next-prev)*100,0,100)}}
+function updateProgression(){const li=levelInfo();els.levelTag.textContent='LEVEL '+li.level;els.xp.textContent=profile.xp.toLocaleString()+' XP';els.xpFill.style.width=li.pct+'%';els.dailyStreak.textContent='Daily ×'+profile.dailyStreak;applySkin()}
+function updateHUD(){
+  els.score.textContent=score.toLocaleString();els.round.textContent=(mode==='sudden'||mode==='rush')?String(round):Math.min(round,maxRounds)+'/'+maxRounds;els.combo.textContent='×'+multiplierFor(streak);els.lives.innerHTML='';
+  const cfg=modeConfig();if(!cfg.usesLives){els.lives.textContent='∞'}else{for(let i=0;i<Math.min(3,cfg.lives);i++){const h=document.createElement('span');h.className='heart '+(i<lives?'on':'');h.textContent='♥';els.lives.appendChild(h)}}updateRankToBeat()
+}
+function multiplierFor(n){return n>=8?10:n>=6?5:n>=4?3:n>=2?2:1}
+function timingGrade(diff){if(diff<=.010)return'PERFECT';if(diff<=.025)return'INSANE';if(diff<=.050)return'AMAZING';if(diff<=.100)return'GREAT';if(diff<=.250)return'GOOD';if(diff<=.500)return'CLOSE';return'MISS'}
+function gradeEmoji(g){return['PERFECT','INSANE','AMAZING','GREAT'].includes(g)?'🟩':['GOOD','CLOSE'].includes(g)?'🟨':'🟥'}
+function basePoints(diff,t){const band=Math.max(.28,t*.045),normalized=clamp(diff/band,0,1);const difficulty=clamp(.95+t/45,1,1.28);return Math.round(1000*(1-normalized)*difficulty)}
+function accuracy(diff,t){return clamp(100*(1-diff/Math.max(.001,t)),0,100)}
+function resetRun(startNow=false){
+  cancelAnimationFrame(raf);clearRevealTimers();const cfg=modeConfig();maxRounds=cfg.rounds;lives=cfg.lives;round=0;score=0;streak=0;bestMultiplier=1;roundErrors=[];signedErrors=[];runResults=[];doubleHits=[];runRankBefore=null;lastRunRank=null;state='idle';
+  dailyRanked=mode!=='daily'||!profile.daily[dateKey()]?.completed;els.endPanel.classList.remove('show');els.result.classList.remove('show');els.shutter.classList.remove('closed');els.calFill.style.width='0';els.timer.textContent='0.000';els.buzzer.textContent='START';els.buzzer.className='buzzer';applySkin();els.subtarget.textContent=cfg.desc;els.help.textContent='Tap START, then tap again when you believe the target time has elapsed. Space/Enter also works.';els.shareDaily.style.display='none';els.rematch.style.display=mode==='versus'&&!!challengeData?'inline-flex':'none';els.challenge.textContent=mode==='versus'&&!challengeData?'SEND THIS CHALLENGE':'CHALLENGE A FRIEND';els.dailyGrid.textContent='';els.pbBadge.innerHTML='';
+  chooseTarget();renderTarget();updateHUD();loadBoard('daily',true)
+}
+function setMode(next){if(['running','revealing'].includes(state))return;mode=next;activeBoard=null;els.challengeBanner.classList.toggle('show',mode==='versus'&&!!challengeData);[...els.modeStrip.querySelectorAll('.modeBtn')].forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));track('mode_selected',{selected_mode:mode});resetRun(false)}
+function startRound(){
+  if(state==='running'||state==='revealing'||state==='finished')return;const cfg=modeConfig();if(mode==='rush'&&round===0)rushEndsAt=performance.now()+45000;state='running';runRankBefore=currentProjectedRank();round++;updateHUD();doubleHits=[];startAt=performance.now();els.result.classList.remove('show');els.shutter.classList.remove('closed');els.calFill.style.width='0';els.buzzer.textContent=mode==='double'?'HIT 1':'STOP';els.buzzer.className='buzzer stop';applySkin();els.help.textContent=mode==='double'?'Hit the first target, then keep timing for the second.':'Calibrate, then trust your internal clock.';els.timer.textContent='0.000';track('round_start',{round,target_ms:Math.round(target*1000),target2_ms:target2?Math.round(target2*1000):null,ranked:modeIsRanked()});beep(230,.045,.045);raf=requestAnimationFrame(tick)
+}
+function tick(){
+  if(state!=='running')return;const t=(performance.now()-startAt)/1000,cfg=modeConfig(),visible=cfg.visible;if(t<visible){els.timer.textContent=t.toFixed(3);els.shutter.classList.remove('closed');els.calFill.style.width=(visible?clamp(t/visible*100,0,100):100)+'%'}else{els.shutter.classList.add('closed');els.calFill.style.width='100%'}
+  if(mode==='rush'){const remain=Math.max(0,(rushEndsAt-performance.now())/1000);els.subtarget.textContent='RUSH • '+remain.toFixed(1)+'s remaining';if(remain<=0){finishRun('TIME');return}}raf=requestAnimationFrame(tick)
+}
+function playerAction(){if(state==='idle'){startRound();return}if(state==='result'){continueAfterResult();return}if(state!=='running')return;const elapsed=(performance.now()-startAt)/1000;if(mode==='double'){if(doubleHits.length===0){doubleHits.push(elapsed);els.buzzer.textContent='HIT 2';thunk();return}doubleHits.push(elapsed);finishDouble()}else finishRound(elapsed,target)}
+function finishRound(elapsed,t){if(state!=='running')return;completeResult({elapsed,diff:Math.abs(elapsed-t),signed:elapsed-t,targetForScore:t})}
+function finishDouble(){if(state!=='running')return;const a=doubleHits[0],b=doubleHits[1],d1=a-target,d2=b-target2;completeResult({elapsed:b,diff:(Math.abs(d1)+Math.abs(d2))/2,signed:(d1+d2)/2,targetForScore:(target+target2)/2,extra:'Hit 1 '+a.toFixed(3)+' • Hit 2 '+b.toFixed(3)})}
+function completeResult({elapsed,diff,signed,targetForScore,extra=''}){
+  state='revealing';cancelAnimationFrame(raf);els.shutter.classList.remove('closed');els.calFill.style.width='100%';els.timer.textContent=elapsed.toFixed(3);const grade=timingGrade(diff),accurate=diff<=.25;if(accurate)streak++;else streak=0;profile.stats.maxStreak=Math.max(profile.stats.maxStreak,streak);const multi=multiplierFor(streak);bestMultiplier=Math.max(bestMultiplier,multi);const earned=basePoints(diff,targetForScore)*multi;score+=earned;const cfg=modeConfig();if(cfg.usesLives&&diff>MISS_LIMIT)lives=Math.max(0,lives-1);
+  roundErrors.push(diff);signedErrors.push(signed);runResults.push({target:targetForScore,diff,signed,grade,accuracy:accuracy(diff,targetForScore),elapsed});if(diff<=.010)profile.stats.perfects++;
+  updateProfileAttempt(targetForScore,signed,diff);checkAchievements();updateHUD();track('round_stop',{round,error_ms:Math.round(diff*1000),signed_error_ms:Math.round(signed*1000),grade,points:earned,streak,multiplier:multi});
+  const endNow=(mode==='sudden'&&diff>MISS_LIMIT)||(cfg.usesLives&&lives<=0)||(mode!=='sudden'&&mode!=='rush'&&round>=maxRounds)||mode==='versus';showStagedReveal({elapsed,diff,signed,targetForScore,grade,earned,multi,endNow,extra})
+}
+function clearRevealTimers(){revealTimers.forEach(clearTimeout);revealTimers=[]}function laterReveal(fn,ms){const t=setTimeout(fn,ms);revealTimers.push(t);return t}
+function revealSequence(value){const s=value.toFixed(3),i=s.indexOf('.'),whole=s.slice(0,i),dec=s.slice(i+1);return [whole+'…',whole+'.'+dec[0]+'…',whole+'.'+dec.slice(0,2)+'…',s]}
+function showStagedReveal(r){
+  clearRevealTimers();els.result.classList.add('show');els.grade.textContent='TIME LOCKED';els.resultTarget.textContent='TARGET '+r.targetForScore.toFixed(3)+'s';els.resultTime.textContent='…';els.delta.className='delta';els.delta.innerHTML='&nbsp;';els.details.classList.remove('revealed');els.reveal.style.width='0';els.cont.disabled=true;els.versusBox.style.display='none';
+  const seq=revealSequence(r.elapsed);seq.forEach((txt,i)=>laterReveal(()=>{els.resultTime.textContent=txt;i<3?beep(170+i*45,.025,.025):null},150+i*135));
+  laterReveal(()=>{
+    els.grade.textContent=r.grade;els.resultTime.textContent=r.elapsed.toFixed(3);els.delta.textContent=(r.signed<0?'−':r.signed>0?'+':'')+Math.abs(r.signed).toFixed(3)+' '+(r.signed<0?'EARLY':r.signed>0?'LATE':'EXACT');els.delta.className='delta '+(r.diff<=.25?'good':'bad')+' revealed';els.accuracy.textContent=accuracy(r.diff,r.targetForScore).toFixed(2)+'%';els.points.textContent='+'+r.earned.toLocaleString();els.streak.textContent=streak;els.reveal.style.width=accuracy(r.diff,r.targetForScore)+'%';els.rankMove.textContent=rankMoveText();
+    if(mode==='versus')renderVersusResult(r);els.details.classList.add('revealed');els.cont.disabled=false;els.cont.textContent=r.endNow?'VIEW RESULTS':'NEXT TARGET';els.cont.dataset.end=r.endNow?'1':'0';state='result';
+    if(r.grade==='PERFECT'){burst(52,true);els.stage.classList.add('perfectHalo');setTimeout(()=>els.stage.classList.remove('perfectHalo'),700);perfectChime();if(navigator.vibrate)try{navigator.vibrate([18,35,22])}catch(e){}}
+    else if(r.diff<=.025){burst(30,true);chime()}else if(r.diff<=.1){burst(16,false);ping()}else if(r.diff>.5){els.stage.classList.add('shake');setTimeout(()=>els.stage.classList.remove('shake'),220);thunk()}else thunk();
+    if(r.extra)els.help.textContent=r.extra;track('reveal_complete',{round,grade:r.grade,error_ms:Math.round(r.diff*1000)})
+  },735)
+}
+function rankMoveText(){if(!modeIsRanked()||!activeBoard)return'';const after=currentProjectedRank();if(!after)return'';if(!runRankBefore)return'Projected rank #'+after;if(after<runRankBefore)return'Projected rank #'+runRankBefore+' → #'+after+' ▲';if(after>runRankBefore)return'Projected rank #'+runRankBefore+' → #'+after;return'Projected rank holds at #'+after}
+function continueAfterResult(){els.result.classList.remove('show');if(els.cont.dataset.end==='1'){finishRun();return}if(mode==='rush'&&performance.now()>=rushEndsAt){finishRun('TIME');return}state='idle';chooseTarget();renderTarget();els.shutter.classList.remove('closed');els.calFill.style.width='0';els.timer.textContent='0.000';els.buzzer.textContent='START';els.buzzer.className='buzzer';applySkin();els.subtarget.textContent=modeConfig().desc;els.help.textContent='Memorize the target, then press START when you are ready.';updateHUD()}
+function renderVersusResult(r){
+  const mine=Math.round(r.diff*1000);els.versusBox.style.display='block';
+  if(!challengeData){els.versusBox.innerHTML='<div class="winner">BENCHMARK SET — '+mine+' ms error</div><div style="color:var(--muted);font-size:12px;margin-top:6px">Finish the run, then send this exact target to a friend.</div>';track('challenge_benchmark_set',{my_error_ms:mine});return}
+  const theirs=Math.round(challengeData.error*1000),win=mine<theirs,tie=mine===theirs;els.versusBox.innerHTML='<div class="versusGrid"><div class="versusSide"><span>Challenge to beat</span><strong>'+theirs+' ms</strong></div><div class="versusSide"><span>Your error</span><strong>'+mine+' ms</strong></div></div><div class="winner">'+(tie?'TIE — REMATCH IT':win?'YOU WIN — '+(theirs-mine)+' ms closer':'CHALLENGER WINS — beat '+mine+' ms next')+'</div>';track('challenge_completed',{won:win,tied:tie,my_error_ms:mine,benchmark_error_ms:theirs})
+}
+
+function finishRun(reason=''){
+  if(state==='finished')return;state='finished';cancelAnimationFrame(raf);clearRevealTimers();els.result.classList.remove('show');els.shutter.classList.remove('closed');
+  const completedRounds=runResults.length,hasResults=completedRounds>0,avg=hasResults?roundErrors.reduce((a,b)=>a+b,0)/roundErrors.length:null,best=hasResults?Math.min(...roundErrors):null;
+  const previous=profile.bestByMode[mode]&&typeof profile.bestByMode[mode]==='object'?profile.bestByMode[mode]:{};const previousBest=Number(previous.score||0),isPB=score>previousBest;
+  profile.stats.runs++;profile.xp+=Math.max(30,Math.round(score/45));profile.bestByMode[mode]={score:Math.max(score,previousBest),bestError:best==null?(Number.isFinite(previous.bestError)?previous.bestError:null):Math.min(Number.isFinite(previous.bestError)?previous.bestError:Infinity,best),rounds:Math.max(completedRounds,Number(previous.rounds||0))};if(mode==='sudden')profile.bestByMode.suddenRounds=Math.max(completedRounds,Number(profile.bestByMode.suddenRounds||0));
+  const runEntry={mode,score,avg,best,rounds:completedRounds,ts:Date.now(),grades:runResults.map(x=>x.grade)};profile.runs.unshift(runEntry);profile.runs=profile.runs.slice(0,20);if(mode==='daily')completeDaily();saveProfile();checkAchievements();updateProgression();renderDNA();
+  els.endScore.textContent=score.toLocaleString();els.endAvg.textContent=avg==null?'—':formatMs(avg);els.endBest.textContent=best==null?'—':formatMs(best);els.endRank.textContent=modeIsRanked()?'Syncing…':'—';els.endTitle.textContent=mode==='sudden'?'SUDDEN DEATH COMPLETE':mode==='rush'?'RUSH COMPLETE':mode==='versus'?(challengeData?'CHALLENGE COMPLETE':'CHALLENGE READY'):'RUN COMPLETE';els.endSub.textContent=mode==='daily'?(dailyRanked?'Daily score locked. Replay is practice only.':'Practice replay complete. Your ranked Daily score is unchanged.'):mode==='versus'&&!challengeData?'Benchmark set. Send the challenge and see if a friend can beat your timing error.':'Your Time DNA profile has been updated.';els.pbBadge.innerHTML=isPB?'<span class="pbBadge">NEW PERSONAL BEST</span>':'';els.endPanel.classList.add('show');els.buzzer.textContent='START';els.buzzer.className='buzzer';applySkin();els.help.textContent='Run complete. Review your profile or go again.';els.dailyGrid.textContent=mode==='daily'?runResults.map(x=>gradeEmoji(x.grade)).join(' '):'';els.shareDaily.style.display=mode==='daily'?'inline-flex':'none';els.rematch.style.display=mode==='versus'&&!!challengeData?'inline-flex':'none';els.challenge.textContent=mode==='versus'&&!challengeData?'SEND THIS CHALLENGE':'CHALLENGE A FRIEND';track('run_complete',{score,rounds:completedRounds,avg_error_ms:avg==null?null:Math.round(avg*1000),best_hit_ms:best==null?null:Math.round(best*1000),best_multiplier:bestMultiplier,ranked:modeIsRanked()});syncScore({runMode:mode,runScore:score,completedRounds,avg,best,ranked:modeIsRanked(),dailyKey:dateKey()})
+}
+function completeDaily(){const key=dateKey();if(profile.daily[key]?.completed)return;profile.daily[key]={completed:true,score,grades:runResults.map(x=>x.grade),ts:Date.now()};const diff=dayDiff(profile.lastDailyDate,key);profile.dailyStreak=diff===1?profile.dailyStreak+1:diff===0?profile.dailyStreak:1;profile.bestDailyStreak=Math.max(profile.bestDailyStreak,profile.dailyStreak);profile.lastDailyDate=key;dailyRanked=true}
+async function syncScore(ctx){
+  if(!ctx.ranked){lastRunRank=null;return}const gid=GAME_IDS[ctx.runMode];if(!gid)return;const sdk=getSdk(gid);if(sdk){try{await sdk.submitScore(ctx.runScore,ctx.completedRounds,{mode:ctx.runMode,average_error_ms:ctx.avg==null?null:Math.round(ctx.avg*1000),best_hit_ms:ctx.best==null?null:Math.round(ctx.best*1000),best_multiplier:bestMultiplier,game_version:VERSION,device_type:deviceType()})}catch(e){}}
+  let board=await fetchBoard(gid,'daily',50);if(!board)board=mockBoard(gid,'daily');boardCache.set(gid+'|daily',board);const info=rankInfo(board,ctx.runScore);lastRunRank=info.rank;
+  if(ctx.runMode==='daily'&&profile.daily[ctx.dailyKey]){profile.daily[ctx.dailyKey].rank=info.rank;saveProfile()}
+  if(state==='finished'&&mode===ctx.runMode){activeBoard=board;els.rankSource.textContent=board.mock?'LOCAL PREVIEW':'CATALYSTPLAY';const pct=percentileText(info.rank,info.total);els.endRank.textContent='#'+info.rank+(pct?' • '+pct:'')+(board?.mock?' preview':'');els.rankBeat.textContent=info.next?'Beat #'+info.next.rank+' • '+Number(info.next.score).toLocaleString():'#1';updateRankToBeat()}
+}
+function updateProfileAttempt(t,signed,diff){profile.history.push({t,signed,diff,ts:Date.now(),mode});if(profile.history.length>300)profile.history=profile.history.slice(-300);saveProfile();renderDNA()}
+function renderDNA(){
+  const h=profile.history||[];els.sampleCount.textContent=h.length+' SAMPLES';updateProgression();if(!h.length){els.dnaBias.textContent='No timing profile yet.';els.biasStat.textContent='—';els.consistencyStat.textContent='—';els.rangeStat.textContent='—';els.bestStat.textContent='—';els.dnaHeadline.textContent='Your internal clock is still learning.';els.dnaDetail.textContent='Complete a few rounds to build your profile.';return}
+  const pct=h.map(x=>x.signed/x.t*100),mean=pct.reduce((a,b)=>a+b,0)/pct.length,variance=pct.reduce((a,b)=>a+(b-mean)*(b-mean),0)/pct.length,sd=Math.sqrt(variance),best=Math.min(...h.map(x=>x.diff));const buckets=[['3–6s',3,6],['6–9s',6,9],['9–12s',9,12],['12s+',12,99]];let bestBucket='—',bestBucketAvg=Infinity;for(const[name,a,b]of buckets){const xs=h.filter(x=>x.t>=a&&x.t<b);if(xs.length){const av=xs.reduce((s,x)=>s+x.diff,0)/xs.length;if(av<bestBucketAvg){bestBucketAvg=av;bestBucket=name}}}
+  const early=h.filter(x=>x.signed<0).length/h.length*100,late=100-early;const recent=h.slice(-20),older=h.slice(-40,-20);const recentAvg=recent.length?recent.reduce((s,x)=>s+x.diff,0)/recent.length:null,oldAvg=older.length?older.reduce((s,x)=>s+x.diff,0)/older.length:null;const trend=oldAvg&&recentAvg?((oldAvg-recentAvg)/oldAvg*100):null;const consistency=sd<.8?'Elite':sd<1.8?'Strong':sd<3?'Developing':'Variable';const label=Math.abs(mean)<.15?'almost perfectly calibrated':mean<0?'running fast':'running slow';els.dnaBias.textContent='Your internal clock is '+label+'.';els.biasStat.textContent=(mean>0?'+':'')+mean.toFixed(2)+'%';els.consistencyStat.textContent=consistency;els.rangeStat.textContent=bestBucket;els.bestStat.textContent=formatMs(best);els.dnaNeedle.style.width=clamp(50+mean*8,0,100)+'%';els.dnaHeadline.textContent='Your internal clock runs '+(Math.abs(mean)<.15?'nearly neutral':Math.abs(mean).toFixed(2)+'% '+(mean<0?'fast':'slow'))+'.';els.dnaDetail.textContent='Best range: '+bestBucket+' • '+Math.round(early)+'% early / '+Math.round(late)+'% late • Consistency: '+consistency+(trend==null?'':' • Recent accuracy '+(trend>=0?'improved ':'slipped ')+Math.abs(trend).toFixed(0)+'%')+'.'
+}
+function checkAchievements(){
+  const unlocked=new Set(profile.achievements);const best=profile.history.length?Math.min(...profile.history.map(x=>x.diff)):Infinity;const tests={first_run:profile.stats.runs>=1,sub100:best<=.1,sub25:best<=.025,sub10:best<=.010,sub5:best<=.005,streak5:profile.stats.maxStreak>=5,samples50:profile.history.length>=50,daily3:profile.dailyStreak>=3,sudden10:Number(profile.bestByMode.suddenRounds||0)>=10,score10k:Object.values(profile.bestByMode).some(v=>Number(v?.score||0)>=10000)};let changed=false;for(const a of ACHIEVEMENTS){if(tests[a.id]&&!unlocked.has(a.id)){profile.achievements.push(a.id);changed=true;toast('Achievement unlocked: '+a.name);track('achievement_unlocked',{achievement:a.id})}}if(changed)saveProfile();renderProfile()}
+function renderProfile(){
+  els.skinGrid.innerHTML='';for(const s of SKINS){const unlocked=skinUnlocked(s),b=document.createElement('button');b.type='button';b.className='skinBtn '+(profile.skin===s.name?'selected ':'')+(unlocked?'':'locked');b.innerHTML='<strong>'+s.name+'</strong><span>'+(unlocked?s.desc:'LOCKED • '+s.desc)+'</span>';b.disabled=!unlocked;b.addEventListener('click',()=>{profile.skin=s.name;saveProfile();applySkin();renderProfile();track('skin_selected',{skin:s.name})});els.skinGrid.appendChild(b)}
+  const li=levelInfo(),bestOverall=Object.values(profile.bestByMode).reduce((m,v)=>Math.max(m,Number(v?.score||0)),0);els.profileStats.innerHTML='<div class="statMini"><span>Level</span><strong>'+li.level+'</strong></div><div class="statMini"><span>XP</span><strong>'+profile.xp.toLocaleString()+'</strong></div><div class="statMini"><span>Best score</span><strong>'+bestOverall.toLocaleString()+'</strong></div><div class="statMini"><span>Daily streak</span><strong>'+profile.dailyStreak+'</strong></div><div class="statMini"><span>Max combo streak</span><strong>'+profile.stats.maxStreak+'</strong></div><div class="statMini"><span>Perfect hits</span><strong>'+profile.stats.perfects+'</strong></div>';
+  els.achievementList.innerHTML='';for(const a of ACHIEVEMENTS){const on=profile.achievements.includes(a.id),d=document.createElement('div');d.className='achievement '+(on?'unlocked':'');d.innerHTML='<div class="achIcon">'+a.icon+'</div><div class="achText"><strong>'+a.name+'</strong><span>'+a.desc+'</span></div><div class="achState">'+(on?'UNLOCKED':'LOCKED')+'</div>';els.achievementList.appendChild(d)}
+  els.historyList.innerHTML='';if(!profile.runs.length)els.historyList.innerHTML='<div class="empty">No completed runs yet.</div>';else for(const r of profile.runs.slice(0,8)){const d=document.createElement('div');d.className='historyRow';d.innerHTML='<strong>'+escapeHtml(MODE_LABELS[r.mode]||r.mode)+'</strong><span>'+Number(r.score).toLocaleString()+' pts</span><span>'+Math.round(Number(r.avg||0)*1000)+' ms avg</span>';els.historyList.appendChild(d)}
+}
+
+function burst(n,alt){const r=els.stage.getBoundingClientRect(),cx=r.width/2,cy=r.height*.43;for(let i=0;i<n;i++){const p=document.createElement('i');p.className='particle '+(alt&&i%3===0?'alt':'');p.style.left=cx+'px';p.style.top=cy+'px';const a=Math.random()*Math.PI*2,d=45+Math.random()*175;p.style.setProperty('--dx',Math.cos(a)*d+'px');p.style.setProperty('--dy',Math.sin(a)*d+'px');els.fx.appendChild(p);setTimeout(()=>p.remove(),850)}}
+let audioCtx=null;function tone(freq,dur=.06,vol=.05,type='sine'){if(!soundOn)return;try{audioCtx=audioCtx||new(window.AudioContext||window.webkitAudioContext)();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type=type;o.frequency.value=freq;g.gain.value=vol;o.connect(g);g.connect(audioCtx.destination);o.start();g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+dur);o.stop(audioCtx.currentTime+dur)}catch(e){}}function beep(f,d,v){tone(f,d,v,'square')}function thunk(){tone(92,.09,.075,'sine')}function ping(){tone(510,.09,.045,'triangle')}function chime(){tone(660,.12,.05,'triangle');setTimeout(()=>tone(990,.18,.04,'triangle'),65)}function perfectChime(){tone(520,.11,.05,'triangle');setTimeout(()=>tone(780,.12,.045,'triangle'),70);setTimeout(()=>tone(1040,.2,.04,'triangle'),140)}
+function toast(msg){els.toast.textContent=msg;els.toast.classList.add('show');setTimeout(()=>els.toast.classList.remove('show'),1800)}
+
+async function openLeaderboard(period='daily'){if(!activeGameId()){toast('This practice mode has no global board.');return}currentBoardPeriod=period;els.leaderOverlay.classList.add('show');[...els.leaderTabs.querySelectorAll('.tab')].forEach(t=>t.classList.toggle('active',t.dataset.period===period));els.leaderSummary.textContent='Loading '+period+' ranking…';els.leaderList.innerHTML='';const b=await loadBoard(period,true);renderBoard(b)}
+function renderBoard(b){const gid=activeGameId(),pid=playerIdFor(gid);els.leaderSummary.textContent=b?.you?.rank?'Your rank: #'+b.you.rank+' • '+percentileText(b.you.rank,b.total_players):(b?.mock?'Offline preview — CatalystPlay will replace this list when connected.':'No ranked run yet.');els.leaderList.innerHTML='';for(const e of(b?.entries||[])){const row=document.createElement('div');row.className='leaderRow '+(pid&&e.player_id===pid?'you':'');row.innerHTML='<div class="rankPos">#'+e.rank+'</div><div class="playerName">'+escapeHtml(e.display_name||'PLAYER')+'</div><div class="scoreVal">'+Number(e.score||0).toLocaleString()+'</div>';els.leaderList.appendChild(row)}}
+
+function openOnboarding(force=false){if(profile.onboarded&&!force)return;onboardIndex=0;els.onboardOverlay.classList.add('show');renderOnboarding()}
+function renderOnboarding(){const s=ONBOARD[onboardIndex];els.onboardIcon.textContent=s.icon;els.onboardTitle.textContent=s.title;els.onboardText.textContent=s.text;els.onboardDemo.textContent=s.demo;els.onboardDots.innerHTML='';ONBOARD.forEach((_,i)=>{const d=document.createElement('i');d.className='dot '+(i===onboardIndex?'on':'');els.onboardDots.appendChild(d)});els.onboardBack.style.visibility=onboardIndex===0?'hidden':'visible';els.onboardNext.textContent=onboardIndex===ONBOARD.length-1?'PLAY':'NEXT'}
+function nextOnboard(){if(onboardIndex<ONBOARD.length-1){onboardIndex++;renderOnboarding();return}profile.onboarded=true;saveProfile();els.onboardOverlay.classList.remove('show');track('onboarding_complete');setMode('calibration')}
+function openProfile(){renderProfile();els.profileOverlay.classList.add('show')}
+
+function parseChallenge(){const q=new URLSearchParams(location.search);if(q.get('challenge')!=='1')return null;const t=Number(q.get('target')),e=Number(q.get('error'));if(!Number.isFinite(t)||t<3||t>30||!Number.isFinite(e)||e<0||e>5)return null;return {target:Number(t.toFixed(3)),error:e}}
+function applyChallenge(){challengeData=parseChallenge();if(!challengeData)return;mode='versus';[...els.modeStrip.querySelectorAll('.modeBtn')].forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));els.challengeBanner.classList.add('show');els.challengeBanner.innerHTML='<strong>FRIEND CHALLENGE:</strong> Stop at '+challengeData.target.toFixed(3)+'s and beat '+Math.round(challengeData.error*1000)+' ms error.'}
+function challengeURL(t,error){const u=new URL(location.href);u.search='';u.searchParams.set('challenge','1');u.searchParams.set('target',Number(t).toFixed(3));u.searchParams.set('error',Number(error).toFixed(6));return u.toString()}
+async function shareText(title,text,url){try{if(navigator.share){await navigator.share({title,text,url});return true}}catch(e){}try{if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(text+'\n'+url);toast('Copied to clipboard');return true}}catch(e){}const ta=document.createElement('textarea');ta.value=text+'\n'+url;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('Copied to clipboard')}catch(e){toast('Share link ready')}ta.remove();return true}
+async function createChallenge(rematch=false){const last=runResults[runResults.length-1];if(!last){toast('Complete at least one target first.');return}const t=rematch&&challengeData?challengeData.target:last.target,e=last.diff,url=challengeURL(t,e);track('challenge_created',{target_ms:Math.round(t*1000),error_ms:Math.round(e*1000),rematch});await shareText('Tickless Challenge','I stopped '+t.toFixed(3)+'s with '+Math.round(e*1000)+' ms error. Beat me.',url)}
+async function shareDaily(){const d=profile.daily[dateKey()];if(!d)return;const grid=(d.grades||[]).map(gradeEmoji).join('');const rank=d.rank?' • #'+d.rank:'';const text='Tickless Daily '+dateKey()+'\n'+Number(d.score).toLocaleString()+' pts'+rank+'\n'+grid+'\nCan you beat my internal clock?';track('daily_shared',{score:d.score,rank:d.rank||null});await shareText('Tickless Daily',text,location.origin&&location.origin!=='null'?location.origin+location.pathname:location.href.split('?')[0])}
+async function shareResult(){const avg=roundErrors.length?roundErrors.reduce((a,b)=>a+b,0)/roundErrors.length:null,best=roundErrors.length?Math.min(...roundErrors):null;const text='Tickless — '+(MODE_LABELS[mode]||mode)+'\n'+score.toLocaleString()+' pts'+(avg==null?'':' • '+Math.round(avg*1000)+' ms avg')+(best==null?'':' • '+Math.round(best*1000)+' ms best')+'\nCan you beat my internal clock?';track('result_shared',{score,avg_error_ms:avg==null?null:Math.round(avg*1000)});await shareText('Tickless Result',text,location.origin&&location.origin!=='null'?location.origin+location.pathname:location.href.split('?')[0])}
+
+function setActiveModeFromURL(){applyChallenge();if(!challengeData)mode='calibration'}
+function init(){setActiveModeFromURL();renderDNA();renderProfile();resetRun(false);els.rankSource.textContent='LOCAL PREVIEW';loadCatalystSDK();if(!profile.onboarded)setTimeout(()=>openOnboarding(false),120);track('game_ready');}
+
+els.modeStrip.addEventListener('click',e=>{const b=e.target.closest('.modeBtn');if(b)setMode(b.dataset.mode)});
+els.buzzer.addEventListener('pointerdown',e=>{e.preventDefault();els.buzzer.classList.add('down');setTimeout(()=>els.buzzer.classList.remove('down'),90);playerAction()});
+document.addEventListener('keydown',e=>{if((e.key===' '||e.key==='Enter')&&!e.repeat&&!/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)&&!els.onboardOverlay.classList.contains('show')&&!els.profileOverlay.classList.contains('show')&&!els.leaderOverlay.classList.contains('show')){e.preventDefault();playerAction()}if(e.key==='Escape'){els.leaderOverlay.classList.remove('show');els.profileOverlay.classList.remove('show')}});
+els.cont.addEventListener('click',continueAfterResult);els.playAgain.addEventListener('click',()=>resetRun(false));els.shareResult.addEventListener('click',shareResult);els.challenge.addEventListener('click',()=>createChallenge(false));els.rematch.addEventListener('click',()=>createChallenge(true));els.shareDaily.addEventListener('click',shareDaily);
+els.leaderBtn.addEventListener('click',()=>openLeaderboard('daily'));els.endLeader.addEventListener('click',()=>openLeaderboard('daily'));els.leaderClose.addEventListener('click',()=>els.leaderOverlay.classList.remove('show'));els.leaderOverlay.addEventListener('click',e=>{if(e.target===els.leaderOverlay)els.leaderOverlay.classList.remove('show')});els.leaderTabs.addEventListener('click',e=>{const b=e.target.closest('.tab');if(b)openLeaderboard(b.dataset.period)});
+els.sound.addEventListener('click',()=>{soundOn=!soundOn;els.sound.textContent='Sound: '+(soundOn?'On':'Off')});els.how.addEventListener('click',()=>openOnboarding(true));els.onboardBack.addEventListener('click',()=>{if(onboardIndex>0){onboardIndex--;renderOnboarding()}});els.onboardNext.addEventListener('click',nextOnboard);
+els.profileBtn.addEventListener('click',openProfile);els.openProfile.addEventListener('click',openProfile);els.profileClose.addEventListener('click',()=>els.profileOverlay.classList.remove('show'));els.profileOverlay.addEventListener('click',e=>{if(e.target===els.profileOverlay)els.profileOverlay.classList.remove('show')});
+
+init();
+})();
+</script>
+</body>
+</html>
