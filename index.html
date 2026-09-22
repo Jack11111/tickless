@@ -8,9 +8,25 @@
 <meta name="description" content="Tickless is a timing skill game. Calibrate for three seconds, lose the clock, and stop as close to the target time as possible.">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Tickless">
+<meta name="color-scheme" content="dark">
+<meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">
+<link rel="canonical" href="https://tickless.catalystplay.net/">
+<link rel="home" href="https://catalystplay.net/">
+<link rel="icon" type="image/svg+xml" href="https://catalystplay.net/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="https://catalystplay.net/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://catalystplay.net/apple-touch-icon.png">
+<link rel="preconnect" href="https://catalystplay.net" crossorigin>
+<meta property="og:site_name" content="Catalyst Play">
 <meta property="og:title" content="Tickless — No Clock. Just Instinct.">
 <meta property="og:description" content="Master your internal clock. Calibrate, go blind, and stop on the exact target.">
 <meta property="og:type" content="website">
+<meta property="og:url" content="https://tickless.catalystplay.net/">
+<meta property="og:image" content="https://catalystplay.net/favicon-512.png">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Tickless — Catalyst Play">
+<meta name="twitter:description" content="No clock. Just instinct. Calibrate for three seconds, go blind, and stop on the exact target.">
+<meta name="twitter:image" content="https://catalystplay.net/favicon-512.png">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Tickless","url":"https://tickless.catalystplay.net/","description":"A precision timing game where players calibrate for three seconds, lose the visible clock, and stop as close as possible to an exact target time.","genre":["Precision","Timing","Arcade"],"applicationCategory":"Game","operatingSystem":"Web Browser","isAccessibleForFree":true,"publisher":{"@type":"Organization","name":"CatalystAi Solutions","url":"https://catalystplay.net/"},"isPartOf":{"@type":"WebSite","name":"Catalyst Play","url":"https://catalystplay.net/"}}</script>
 <style>
 :root{
   --bg:#090b10;--panel:#11151d;--panel2:#171c26;--text:#f5f7fb;--muted:#98a2b5;--line:#252d3a;
@@ -23,7 +39,7 @@ button,input{font:inherit}button{cursor:pointer}button:focus-visible{outline:3px
 .app{width:min(1180px,100%);margin:0 auto;padding:16px 14px 42px}
 .topbar{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;margin-bottom:13px}.brand{display:flex;align-items:center;gap:10px;min-width:0}
 .logo{width:40px;height:40px;border-radius:13px;background:linear-gradient(145deg,var(--accent),#ff9d2f);display:grid;place-items:center;color:#111318;font-weight:1000;box-shadow:0 8px 28px rgba(255,211,56,.18)}
-.brand h1{margin:0;font-size:20px;letter-spacing:.08em}.brand p{margin:2px 0 0;color:var(--muted);font-size:12px}.topactions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+.brand h1{margin:0;font-size:20px;letter-spacing:.08em}.catalystHome{display:inline-flex;align-items:center;text-decoration:none}.brand p{margin:2px 0 0;color:var(--muted);font-size:12px}.topactions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
 .ghost,.modeBtn,.smallBtn,.secondary,.tab,.skinBtn{border:1px solid var(--line);background:#11151d;color:var(--text);border-radius:12px;min-height:42px;padding:0 13px}.ghost:hover,.modeBtn:hover,.smallBtn:hover,.secondary:hover,.tab:hover,.skinBtn:hover{border-color:#3a4658}
 .layout{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:14px}.card{background:linear-gradient(180deg,rgba(19,24,33,.97),rgba(13,17,24,.97));border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow)}
 .gameCard{padding:17px;overflow:hidden;position:relative}.modeStrip{display:flex;gap:8px;overflow:auto;padding-bottom:4px;margin-bottom:12px;scrollbar-width:none}.modeStrip::-webkit-scrollbar{display:none}.modeBtn{white-space:nowrap;color:var(--muted)}.modeBtn.active{background:var(--accent);color:#111318;border-color:var(--accent);font-weight:950}
@@ -54,6 +70,7 @@ button,input{font:inherit}button{cursor:pointer}button:focus-visible{outline:3px
   <div class="topbar">
     <div class="brand"><div class="logo">T</div><div><h1>TICKLESS</h1><p>Master your internal clock.</p></div></div>
     <div class="topactions">
+      <a class="ghost catalystHome" href="https://catalystplay.net/" aria-label="Back to Catalyst Play">Catalyst Play</a>
       <button class="ghost" id="howBtn" type="button">How to Play</button>
       <button class="ghost" id="profileBtn" type="button">Profile</button>
       <button class="ghost" id="soundBtn" type="button">Sound: On</button>
@@ -207,6 +224,8 @@ button,input{font:inherit}button{cursor:pointer}button:focus-visible{outline:3px
 const VERSION='1.0.0-rc1';
 const API_BASE='https://catalystplay.net/api';
 const STORAGE='tickless-profile-v1';
+const GAME_ID='tickless';
+const GA_ID='G-FTXFD9D2NX';
 const GAME_IDS={calibration:'tickless-calibration',daily:'tickless-daily',sudden:'tickless-sudden',rush:'tickless-rush'};
 const RANKED_MODES=new Set(Object.keys(GAME_IDS));
 const MODE_LABELS={calibration:'Calibration',daily:'Daily Five',blind:'Blind',sudden:'Sudden Death',rush:'Rush',double:'Double Tap',versus:'Friend Challenge'};
@@ -253,7 +272,7 @@ const els={
 
 let mode='calibration',state='idle',round=0,maxRounds=5,lives=3,score=0,streak=0,bestMultiplier=1,target=8.37,target2=null,startAt=0,raf=0,rushEndsAt=0,doubleHits=[];
 let roundErrors=[],signedErrors=[],runResults=[],runRankBefore=null,lastRunRank=null,soundOn=true,revealTimers=[],onboardIndex=0,currentBoardPeriod='daily';
-let challengeData=null,dailyRanked=true,activeBoard=null,boardCache=new Map(),sdkCache=new Map();
+let challengeData=null,dailyRanked=true,activeBoard=null,boardCache=new Map(),catalyst=null;
 let profile=loadProfile();
 
 function defaultProfile(){return {xp:0,skin:'Classic',history:[],runs:[],achievements:[],onboarded:false,daily:{},dailyStreak:0,bestDailyStreak:0,lastDailyDate:null,stats:{runs:0,maxStreak:0,perfects:0},bestByMode:{}}}
@@ -268,17 +287,37 @@ function dayDiff(a,b){if(!a||!b)return null;return Math.round((Date.parse(b+'T00
 function formatMs(s){return Math.round(s*1000)+' ms'}
 function modeIsRanked(){return RANKED_MODES.has(mode)&&(mode!=='daily'||dailyRanked)}
 function activeGameId(){return GAME_IDS[mode]||null}
-function getSdk(gameId=activeGameId()){
-  if(!gameId||!window.CatalystGameSDK?.init)return null;
-  if(sdkCache.has(gameId))return sdkCache.get(gameId);
-  try{const sdk=window.CatalystGameSDK.init({gameId});sdkCache.set(gameId,sdk);return sdk}catch(e){return null}
-}
-function track(name,props={}){try{const sdk=getSdk(GAME_IDS.calibration);if(sdk?.track)sdk.track(name,Object.assign({game_version:VERSION,mode,device_type:deviceType()},props))}catch(e){}}
-function playerIdFor(gameId){const sdk=getSdk(gameId);return sdk?.playerId||getSdk(GAME_IDS.calibration)?.playerId||''}
-function loadCatalystSDK(){if(window.CatalystGameSDK?.init){sdkCache.clear();els.rankSource.textContent='CATALYSTPLAY';loadBoard('daily',true);track('game_ready');return}const sc=document.createElement('script');sc.src='https://catalystplay.net/catalyst-game-sdk.js';sc.async=true;sc.onload=()=>{sdkCache.clear();els.rankSource.textContent='CATALYSTPLAY';loadBoard('daily',true);track('game_ready')};sc.onerror=()=>{els.rankSource.textContent='LOCAL PREVIEW'};document.head.appendChild(sc)}
+const startedAt=Date.now();
 
+function loadGoogleAnalytics(){
+  if(document.querySelector('script[data-tickless-ga]'))return;
+  window.dataLayer=window.dataLayer||[];
+  window.gtag=window.gtag||function(){window.dataLayer.push(arguments)};
+  const sc=document.createElement('script');sc.async=true;sc.dataset.ticklessGa='1';sc.src='https://www.googletagmanager.com/gtag/js?id='+encodeURIComponent(GA_ID);document.head.appendChild(sc);
+  window.gtag('js',new Date());window.gtag('config',GA_ID,{send_page_view:true})
+}
+function track(name,props={}){
+  const enriched=Object.assign({game_version:VERSION,mode,device_type:deviceType()},props);
+  try{if(catalyst?.track)catalyst.track(name,enriched)}catch(e){}
+  try{if(typeof window.gtag==='function')window.gtag('event',String(name).slice(0,40),Object.assign({game_id:GAME_ID,game_mode:mode,traffic_source:catalyst?.source||'direct'},enriched))}catch(e){}
+}
+function loadCatalystSDK(){
+  const ready=()=>{
+    try{catalyst=window.CatalystGameSDK?.init?.({gameId:GAME_ID})||null}catch(e){catalyst=null}
+    els.rankSource.textContent=catalyst?'CATALYSTPLAY':'LOCAL PREVIEW';
+    track('page_view',{acquisition:(catalyst?.source||'direct')!=='direct'});
+    track('game_open',{acquisition:(catalyst?.source||'direct')!=='direct'});
+    track('game_ready');
+    loadBoard('daily',true)
+  };
+  loadGoogleAnalytics();
+  if(window.CatalystGameSDK?.init){ready();return}
+  const existing=document.querySelector('script[data-catalyst-sdk]');
+  if(existing){existing.addEventListener('load',ready,{once:true});existing.addEventListener('error',()=>{els.rankSource.textContent='LOCAL PREVIEW'},{once:true});return}
+  const sc=document.createElement('script');sc.src='https://catalystplay.net/catalyst-game-sdk.js?v=3';sc.async=true;sc.dataset.catalystSdk='1';sc.onload=ready;sc.onerror=()=>{els.rankSource.textContent='LOCAL PREVIEW'};document.head.appendChild(sc)
+}
 async function fetchBoard(gameId,period='daily',limit=50){
-  if(!gameId)return null;const pid=playerIdFor(gameId);const params=new URLSearchParams({game_id:gameId,period:String(period),limit:String(limit)});if(pid)params.set('player_id',pid);
+  if(!gameId)return null;const pid=catalyst?.playerId||'';const params=new URLSearchParams({game_id:gameId,period:String(period),limit:String(limit)});if(pid)params.set('player_id',pid);
   try{const r=await fetch(API_BASE+'/leaderboard?'+params.toString(),{headers:{accept:'application/json'}});if(!r.ok)return null;return await r.json()}catch(e){return null}
 }
 function mockBoard(gameId,period='daily'){
@@ -289,7 +328,7 @@ function mockBoard(gameId,period='daily'){
   return {ok:true,entries:arr,total_players:243,you:null,mock:true}
 }
 async function loadBoard(period='daily',force=false){
-  const gid=activeGameId();if(!gid){activeBoard=null;updateRankToBeat();return null}const key=gid+'|'+period;let b=!force?boardCache.get(key):null;if(!b)b=await fetchBoard(gid,period,50);if(!b)b=mockBoard(gid,period);boardCache.set(key,b);if(period==='daily'){activeBoard=b;els.rankSource.textContent=b.mock?'LOCAL PREVIEW':'CATALYSTPLAY';updateRankToBeat()}return b
+  const gid=activeGameId();if(!gid){activeBoard=null;updateRankToBeat();return null}const key=gid+'|'+period;let board=!force?boardCache.get(key):null;if(!board)board=await fetchBoard(gid,period,50);if(!board)board=mockBoard(gid,period);boardCache.set(key,board);if(period==='daily'){activeBoard=board;els.rankSource.textContent=board.mock?'LOCAL PREVIEW':'CATALYSTPLAY';updateRankToBeat()}return board
 }
 function percentileText(rank,total){rank=Number(rank);total=Number(total);if(!Number.isFinite(rank)||rank<1||!Number.isFinite(total)||total<1)return '';return 'TOP '+Math.max(1,Math.ceil(rank/total*100))+'%'}
 function projectedScore(){if(round<=0)return 0;const rate=score/Math.max(1,round);if(mode==='rush'){const remaining=Math.max(0,rushEndsAt-performance.now());return Math.round(score+rate*(remaining/Math.max(2200,(performance.now()-startAt)||3000)))}if(mode==='sudden')return score;return Math.round(score+rate*Math.max(0,maxRounds-round))}
@@ -345,7 +384,7 @@ function resetRun(startNow=false){
 }
 function setMode(next){if(['running','revealing'].includes(state))return;mode=next;activeBoard=null;els.challengeBanner.classList.toggle('show',mode==='versus'&&!!challengeData);[...els.modeStrip.querySelectorAll('.modeBtn')].forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));track('mode_selected',{selected_mode:mode});resetRun(false)}
 function startRound(){
-  if(state==='running'||state==='revealing'||state==='finished')return;const cfg=modeConfig();if(mode==='rush'&&round===0)rushEndsAt=performance.now()+45000;state='running';runRankBefore=currentProjectedRank();round++;updateHUD();doubleHits=[];startAt=performance.now();els.result.classList.remove('show');els.shutter.classList.remove('closed');els.calFill.style.width='0';els.buzzer.textContent=mode==='double'?'HIT 1':'STOP';els.buzzer.className='buzzer stop';applySkin();els.help.textContent=mode==='double'?'Hit the first target, then keep timing for the second.':'Calibrate, then trust your internal clock.';els.timer.textContent='0.000';track('round_start',{round,target_ms:Math.round(target*1000),target2_ms:target2?Math.round(target2*1000):null,ranked:modeIsRanked()});beep(230,.045,.045);raf=requestAnimationFrame(tick)
+  if(state==='running'||state==='revealing'||state==='finished')return;const cfg=modeConfig();if(round===0)track('game_start',{ranked:modeIsRanked(),daily_ranked:dailyRanked});if(mode==='rush'&&round===0)rushEndsAt=performance.now()+45000;state='running';runRankBefore=currentProjectedRank();round++;updateHUD();doubleHits=[];startAt=performance.now();els.result.classList.remove('show');els.shutter.classList.remove('closed');els.calFill.style.width='0';els.buzzer.textContent=mode==='double'?'HIT 1':'STOP';els.buzzer.className='buzzer stop';applySkin();els.help.textContent=mode==='double'?'Hit the first target, then keep timing for the second.':'Calibrate, then trust your internal clock.';els.timer.textContent='0.000';track('round_start',{round,target_ms:Math.round(target*1000),target2_ms:target2?Math.round(target2*1000):null,ranked:modeIsRanked()});beep(230,.045,.045);raf=requestAnimationFrame(tick)
 }
 function tick(){
   if(state!=='running')return;const t=(performance.now()-startAt)/1000,cfg=modeConfig(),visible=cfg.visible;if(t<visible){els.timer.textContent=t.toFixed(3);els.shutter.classList.remove('closed');els.calFill.style.width=(visible?clamp(t/visible*100,0,100):100)+'%'}else{els.shutter.classList.add('closed');els.calFill.style.width='100%'}
@@ -357,7 +396,7 @@ function finishDouble(){if(state!=='running')return;const a=doubleHits[0],b=doub
 function completeResult({elapsed,diff,signed,targetForScore,extra=''}){
   state='revealing';cancelAnimationFrame(raf);els.shutter.classList.remove('closed');els.calFill.style.width='100%';els.timer.textContent=elapsed.toFixed(3);const grade=timingGrade(diff),accurate=diff<=.25;if(accurate)streak++;else streak=0;profile.stats.maxStreak=Math.max(profile.stats.maxStreak,streak);const multi=multiplierFor(streak);bestMultiplier=Math.max(bestMultiplier,multi);const earned=basePoints(diff,targetForScore)*multi;score+=earned;const cfg=modeConfig();if(cfg.usesLives&&diff>MISS_LIMIT)lives=Math.max(0,lives-1);
   roundErrors.push(diff);signedErrors.push(signed);runResults.push({target:targetForScore,diff,signed,grade,accuracy:accuracy(diff,targetForScore),elapsed});if(diff<=.010)profile.stats.perfects++;
-  updateProfileAttempt(targetForScore,signed,diff);checkAchievements();updateHUD();track('round_stop',{round,error_ms:Math.round(diff*1000),signed_error_ms:Math.round(signed*1000),grade,points:earned,streak,multiplier:multi});
+  updateProfileAttempt(targetForScore,signed,diff);checkAchievements();updateHUD();track('round_complete',{round,error_ms:Math.round(diff*1000),signed_error_ms:Math.round(signed*1000),grade,points:earned,streak,multiplier:multi});
   const endNow=(mode==='sudden'&&diff>MISS_LIMIT)||(cfg.usesLives&&lives<=0)||(mode!=='sudden'&&mode!=='rush'&&round>=maxRounds)||mode==='versus';showStagedReveal({elapsed,diff,signed,targetForScore,grade,earned,multi,endNow,extra})
 }
 function clearRevealTimers(){revealTimers.forEach(clearTimeout);revealTimers=[]}function laterReveal(fn,ms){const t=setTimeout(fn,ms);revealTimers.push(t);return t}
@@ -391,7 +430,17 @@ function finishRun(reason=''){
 }
 function completeDaily(){const key=dateKey();if(profile.daily[key]?.completed)return;profile.daily[key]={completed:true,score,grades:runResults.map(x=>x.grade),ts:Date.now()};const diff=dayDiff(profile.lastDailyDate,key);profile.dailyStreak=diff===1?profile.dailyStreak+1:diff===0?profile.dailyStreak:1;profile.bestDailyStreak=Math.max(profile.bestDailyStreak,profile.dailyStreak);profile.lastDailyDate=key;dailyRanked=true}
 async function syncScore(ctx){
-  if(!ctx.ranked){lastRunRank=null;return}const gid=GAME_IDS[ctx.runMode];if(!gid)return;const sdk=getSdk(gid);if(sdk){try{await sdk.submitScore(ctx.runScore,ctx.completedRounds,{mode:ctx.runMode,average_error_ms:ctx.avg==null?null:Math.round(ctx.avg*1000),best_hit_ms:ctx.best==null?null:Math.round(ctx.best*1000),best_multiplier:bestMultiplier,game_version:VERSION,device_type:deviceType()})}catch(e){}}
+  if(!ctx.ranked){lastRunRank=null;return}
+  const gid=GAME_IDS[ctx.runMode];if(!gid)return;
+  if(catalyst?.playerId){
+    try{
+      await fetch(API_BASE+'/score',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({
+        player_id:catalyst.playerId,game_id:gid,score:Math.max(0,Math.floor(ctx.runScore)),level:Math.max(0,Math.floor(ctx.completedRounds||0)),
+        source:catalyst.source||'direct',mode:ctx.runMode,average_error_ms:ctx.avg==null?null:Math.round(ctx.avg*1000),
+        best_hit_ms:ctx.best==null?null:Math.round(ctx.best*1000),best_multiplier:bestMultiplier,game_version:VERSION,device_type:deviceType()
+      }),keepalive:true})
+    }catch(e){}
+  }
   let board=await fetchBoard(gid,'daily',50);if(!board)board=mockBoard(gid,'daily');boardCache.set(gid+'|daily',board);const info=rankInfo(board,ctx.runScore);lastRunRank=info.rank;
   if(ctx.runMode==='daily'&&profile.daily[ctx.dailyKey]){profile.daily[ctx.dailyKey].rank=info.rank;saveProfile()}
   if(state==='finished'&&mode===ctx.runMode){activeBoard=board;els.rankSource.textContent=board.mock?'LOCAL PREVIEW':'CATALYSTPLAY';const pct=percentileText(info.rank,info.total);els.endRank.textContent='#'+info.rank+(pct?' • '+pct:'')+(board?.mock?' preview':'');els.rankBeat.textContent=info.next?'Beat #'+info.next.rank+' • '+Number(info.next.score).toLocaleString():'#1';updateRankToBeat()}
@@ -415,8 +464,8 @@ function burst(n,alt){const r=els.stage.getBoundingClientRect(),cx=r.width/2,cy=
 let audioCtx=null;function tone(freq,dur=.06,vol=.05,type='sine'){if(!soundOn)return;try{audioCtx=audioCtx||new(window.AudioContext||window.webkitAudioContext)();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type=type;o.frequency.value=freq;g.gain.value=vol;o.connect(g);g.connect(audioCtx.destination);o.start();g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+dur);o.stop(audioCtx.currentTime+dur)}catch(e){}}function beep(f,d,v){tone(f,d,v,'square')}function thunk(){tone(92,.09,.075,'sine')}function ping(){tone(510,.09,.045,'triangle')}function chime(){tone(660,.12,.05,'triangle');setTimeout(()=>tone(990,.18,.04,'triangle'),65)}function perfectChime(){tone(520,.11,.05,'triangle');setTimeout(()=>tone(780,.12,.045,'triangle'),70);setTimeout(()=>tone(1040,.2,.04,'triangle'),140)}
 function toast(msg){els.toast.textContent=msg;els.toast.classList.add('show');setTimeout(()=>els.toast.classList.remove('show'),1800)}
 
-async function openLeaderboard(period='daily'){if(!activeGameId()){toast('This practice mode has no global board.');return}currentBoardPeriod=period;els.leaderOverlay.classList.add('show');[...els.leaderTabs.querySelectorAll('.tab')].forEach(t=>t.classList.toggle('active',t.dataset.period===period));els.leaderSummary.textContent='Loading '+period+' ranking…';els.leaderList.innerHTML='';const b=await loadBoard(period,true);renderBoard(b)}
-function renderBoard(b){const gid=activeGameId(),pid=playerIdFor(gid);els.leaderSummary.textContent=b?.you?.rank?'Your rank: #'+b.you.rank+' • '+percentileText(b.you.rank,b.total_players):(b?.mock?'Offline preview — CatalystPlay will replace this list when connected.':'No ranked run yet.');els.leaderList.innerHTML='';for(const e of(b?.entries||[])){const row=document.createElement('div');row.className='leaderRow '+(pid&&e.player_id===pid?'you':'');row.innerHTML='<div class="rankPos">#'+e.rank+'</div><div class="playerName">'+escapeHtml(e.display_name||'PLAYER')+'</div><div class="scoreVal">'+Number(e.score||0).toLocaleString()+'</div>';els.leaderList.appendChild(row)}}
+async function openLeaderboard(period='daily'){track('leaderboard_opened',{period});if(!activeGameId()){toast('This practice mode has no global board.');return}currentBoardPeriod=period;els.leaderOverlay.classList.add('show');[...els.leaderTabs.querySelectorAll('.tab')].forEach(t=>t.classList.toggle('active',t.dataset.period===period));els.leaderSummary.textContent='Loading '+period+' ranking…';els.leaderList.innerHTML='';const b=await loadBoard(period,true);renderBoard(b)}
+function renderBoard(b){const pid=catalyst?.playerId||'';els.leaderSummary.textContent=b?.you?.rank?'Your rank: #'+b.you.rank+' • '+percentileText(b.you.rank,b.total_players):(b?.mock?'Offline preview — CatalystPlay will replace this list when connected.':'No ranked run yet.');els.leaderList.innerHTML='';for(const e of(b?.entries||[])){const row=document.createElement('div');row.className='leaderRow '+(pid&&e.player_id===pid?'you':'');row.innerHTML='<div class="rankPos">#'+e.rank+'</div><div class="playerName">'+escapeHtml(e.display_name||'PLAYER')+'</div><div class="scoreVal">'+Number(e.score||0).toLocaleString()+'</div>';els.leaderList.appendChild(row)}}
 
 function openOnboarding(force=false){if(profile.onboarded&&!force)return;onboardIndex=0;els.onboardOverlay.classList.add('show');renderOnboarding()}
 function renderOnboarding(){const s=ONBOARD[onboardIndex];els.onboardIcon.textContent=s.icon;els.onboardTitle.textContent=s.title;els.onboardText.textContent=s.text;els.onboardDemo.textContent=s.demo;els.onboardDots.innerHTML='';ONBOARD.forEach((_,i)=>{const d=document.createElement('i');d.className='dot '+(i===onboardIndex?'on':'');els.onboardDots.appendChild(d)});els.onboardBack.style.visibility=onboardIndex===0?'hidden':'visible';els.onboardNext.textContent=onboardIndex===ONBOARD.length-1?'PLAY':'NEXT'}
@@ -427,11 +476,13 @@ function parseChallenge(){const q=new URLSearchParams(location.search);if(q.get(
 function applyChallenge(){challengeData=parseChallenge();if(!challengeData)return;mode='versus';[...els.modeStrip.querySelectorAll('.modeBtn')].forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));els.challengeBanner.classList.add('show');els.challengeBanner.innerHTML='<strong>FRIEND CHALLENGE:</strong> Stop at '+challengeData.target.toFixed(3)+'s and beat '+Math.round(challengeData.error*1000)+' ms error.'}
 function challengeURL(t,error){const u=new URL(location.href);u.search='';u.searchParams.set('challenge','1');u.searchParams.set('target',Number(t).toFixed(3));u.searchParams.set('error',Number(error).toFixed(6));return u.toString()}
 async function shareText(title,text,url){try{if(navigator.share){await navigator.share({title,text,url});return true}}catch(e){}try{if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(text+'\n'+url);toast('Copied to clipboard');return true}}catch(e){}const ta=document.createElement('textarea');ta.value=text+'\n'+url;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('Copied to clipboard')}catch(e){toast('Share link ready')}ta.remove();return true}
-async function createChallenge(rematch=false){const last=runResults[runResults.length-1];if(!last){toast('Complete at least one target first.');return}const t=rematch&&challengeData?challengeData.target:last.target,e=last.diff,url=challengeURL(t,e);track('challenge_created',{target_ms:Math.round(t*1000),error_ms:Math.round(e*1000),rematch});await shareText('Tickless Challenge','I stopped '+t.toFixed(3)+'s with '+Math.round(e*1000)+' ms error. Beat me.',url)}
-async function shareDaily(){const d=profile.daily[dateKey()];if(!d)return;const grid=(d.grades||[]).map(gradeEmoji).join('');const rank=d.rank?' • #'+d.rank:'';const text='Tickless Daily '+dateKey()+'\n'+Number(d.score).toLocaleString()+' pts'+rank+'\n'+grid+'\nCan you beat my internal clock?';track('daily_shared',{score:d.score,rank:d.rank||null});await shareText('Tickless Daily',text,location.origin&&location.origin!=='null'?location.origin+location.pathname:location.href.split('?')[0])}
-async function shareResult(){const avg=roundErrors.length?roundErrors.reduce((a,b)=>a+b,0)/roundErrors.length:null,best=roundErrors.length?Math.min(...roundErrors):null;const text='Tickless — '+(MODE_LABELS[mode]||mode)+'\n'+score.toLocaleString()+' pts'+(avg==null?'':' • '+Math.round(avg*1000)+' ms avg')+(best==null?'':' • '+Math.round(best*1000)+' ms best')+'\nCan you beat my internal clock?';track('result_shared',{score,avg_error_ms:avg==null?null:Math.round(avg*1000)});await shareText('Tickless Result',text,location.origin&&location.origin!=='null'?location.origin+location.pathname:location.href.split('?')[0])}
+async function createChallenge(rematch=false){const last=runResults[runResults.length-1];if(!last){toast('Complete at least one target first.');return}const t=rematch&&challengeData?challengeData.target:last.target,e=last.diff,url=challengeURL(t,e);track('challenge_created',{target_ms:Math.round(t*1000),error_ms:Math.round(e*1000),rematch});track('game_shared',{share_type:'challenge'});await shareText('Tickless Challenge','I stopped '+t.toFixed(3)+'s with '+Math.round(e*1000)+' ms error. Beat me.',url)}
+async function shareDaily(){const d=profile.daily[dateKey()];if(!d)return;const grid=(d.grades||[]).map(gradeEmoji).join('');const rank=d.rank?' • #'+d.rank:'';const text='Tickless Daily '+dateKey()+'\n'+Number(d.score).toLocaleString()+' pts'+rank+'\n'+grid+'\nCan you beat my internal clock?';track('daily_shared',{score:d.score,rank:d.rank||null});track('game_shared',{share_type:'daily'});await shareText('Tickless Daily',text,location.origin&&location.origin!=='null'?location.origin+location.pathname:location.href.split('?')[0])}
+async function shareResult(){const avg=roundErrors.length?roundErrors.reduce((a,b)=>a+b,0)/roundErrors.length:null,best=roundErrors.length?Math.min(...roundErrors):null;const text='Tickless — '+(MODE_LABELS[mode]||mode)+'\n'+score.toLocaleString()+' pts'+(avg==null?'':' • '+Math.round(avg*1000)+' ms avg')+(best==null?'':' • '+Math.round(best*1000)+' ms best')+'\nCan you beat my internal clock?';track('result_shared',{score,avg_error_ms:avg==null?null:Math.round(avg*1000)});track('game_shared',{share_type:'result'});await shareText('Tickless Result',text,location.origin&&location.origin!=='null'?location.origin+location.pathname:location.href.split('?')[0])}
 
 function setActiveModeFromURL(){applyChallenge();if(!challengeData)mode='calibration'}
+let sessionEnded=false;window.addEventListener('pagehide',()=>{if(sessionEnded)return;sessionEnded=true;track('session_end',{seconds:Math.max(0,Math.round((Date.now()-startedAt)/1000)),score,rounds:runResults.length})},{once:true});
+
 function init(){setActiveModeFromURL();renderDNA();renderProfile();resetRun(false);els.rankSource.textContent='LOCAL PREVIEW';loadCatalystSDK();if(!profile.onboarded)setTimeout(()=>openOnboarding(false),120);track('game_ready');}
 
 els.modeStrip.addEventListener('click',e=>{const b=e.target.closest('.modeBtn');if(b)setMode(b.dataset.mode)});

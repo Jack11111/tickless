@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>Tickless Preview</title>
+<style>
+*{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#080b10;color:#fff;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.scene{position:relative;width:100%;height:100%;min-height:220px;overflow:hidden;background:radial-gradient(circle at 50% 20%,rgba(255,211,56,.11),transparent 24%),linear-gradient(180deg,#111722,#080b10 76%)}
+.grid{position:absolute;inset:0;opacity:.16;background-image:linear-gradient(rgba(255,255,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.06) 1px,transparent 1px);background-size:28px 28px;mask-image:linear-gradient(#000,transparent 86%)}
+.logo{position:absolute;left:7%;top:8%;font-size:clamp(12px,1.5vw,20px);font-weight:1000;letter-spacing:.14em}.logo span{color:#ffd338}
+.hud{position:absolute;right:7%;top:8%;text-align:right;color:#9ba7b9;font-size:clamp(8px,.8vw,11px);letter-spacing:.12em}.hud b{display:block;color:#fff;font-size:clamp(14px,1.8vw,25px);letter-spacing:0;margin-top:3px}
+.target{position:absolute;left:50%;top:28%;transform:translateX(-50%);text-align:center}.target small{display:block;color:#9da9bb;font-size:clamp(8px,.8vw,11px);font-weight:800;letter-spacing:.17em;margin-bottom:5px}.target strong{font-size:clamp(32px,5.6vw,74px);line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.055em}
+.clock{position:absolute;left:50%;top:58%;width:min(56%,360px);height:24%;transform:translate(-50%,-50%);border:1px solid rgba(255,255,255,.14);border-radius:13px;background:#05070a;overflow:hidden;display:grid;place-items:center}
+.digits{font-size:clamp(24px,4vw,52px);font-weight:950;font-variant-numeric:tabular-nums;animation:digits 5.2s linear infinite}
+.shutter{position:absolute;inset:0;display:flex;flex-direction:column;animation:hideLabel 5.2s linear infinite}.top,.bottom{height:50%;background:linear-gradient(#1b2230,#0d1219);transition:none}.top{border-bottom:1px solid #323d4d;transform:translateY(-101%);animation:closeTop 5.2s ease-in-out infinite}.bottom{border-top:1px solid #323d4d;transform:translateY(101%);animation:closeBottom 5.2s ease-in-out infinite}.blind{position:absolute;inset:0;display:grid;place-items:center;font-size:clamp(9px,1.1vw,14px);font-weight:1000;letter-spacing:.16em;opacity:0;animation:label 5.2s linear infinite}
+.result{position:absolute;left:50%;bottom:9%;transform:translateX(-50%);text-align:center;opacity:0;animation:result 5.2s ease infinite;white-space:nowrap}.result b{display:block;color:#45df8a;font-size:clamp(18px,3vw,38px)}.result span{font-size:clamp(8px,.8vw,11px);font-weight:900;letter-spacing:.15em;color:#ffd338}
+.caption{position:absolute;left:7%;bottom:6.5%;font-size:clamp(8px,.75vw,11px);letter-spacing:.14em;color:#94a0b2}.caption b{color:#ffd338}
+@keyframes digits{0%{opacity:1}52%{opacity:1}53%,100%{opacity:0}}
+@keyframes closeTop{0%,48%{transform:translateY(-101%)}55%,82%{transform:translateY(0)}90%,100%{transform:translateY(-101%)}}
+@keyframes closeBottom{0%,48%{transform:translateY(101%)}55%,82%{transform:translateY(0)}90%,100%{transform:translateY(101%)}}
+@keyframes label{0%,53%{opacity:0}58%,80%{opacity:1}86%,100%{opacity:0}}
+@keyframes result{0%,82%{opacity:0;transform:translate(-50%,8px)}87%,96%{opacity:1;transform:translate(-50%,0)}100%{opacity:0}}
+</style>
+</head>
+<body>
+<div class="scene" aria-hidden="true">
+  <div class="grid"></div>
+  <div class="logo">TICK<span>LESS</span></div>
+  <div class="hud">COMBO<b>×5</b></div>
+  <div class="target"><small>TARGET TIME</small><strong>8.370</strong></div>
+  <div class="clock">
+    <div class="digits">3.000</div>
+    <div class="shutter"><div class="top"></div><div class="bottom"></div><div class="blind">FEEL THE TIME</div></div>
+  </div>
+  <div class="result"><b>+0.018s</b><span>INSANE · 99.78%</span></div>
+  <div class="caption"><b>PRECISION / TIMING</b> · NO CLOCK. JUST INSTINCT.</div>
+</div>
+</body>
+</html>
